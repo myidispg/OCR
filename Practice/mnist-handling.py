@@ -6,8 +6,6 @@ Created on Thu Sep 27 13:48:33 2018
 """
 #------Code on python-mnist website----------------------
 from mnist import MNIST
-import numpy as np
-import pandas as pd
 
 # Path to the directory containing the datasets
 mndata = MNIST('../Datasets/gzip')
@@ -30,8 +28,10 @@ df_images_train = pd.DataFrame(images_train)
 #-----------------------------------------------------------
 
 from scipy import io as spio
+import numpy as np
+import pandas as pd
 
-emnist = spio.loadmat("../datasets/matlab/emnist-byclass.mat")
+emnist = spio.loadmat("../Datasets/matlab/emnist-byclass.mat")
 # load training dataset
 x_train = emnist["dataset"][0][0][0][0][0][0]
 x_train = x_train.astype(np.float32)
