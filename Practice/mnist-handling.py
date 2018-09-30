@@ -53,8 +53,13 @@ test_labels = y_test
 # For character detection, a list with all ones
 y_detect_train = []
 
-for i in range(len(x_train)):
+for i in range(x_train.shape[0]):
     y_detect_train.append([1])
+
+y_detect_test = []
+
+for i in range(x_test.shape[0]):
+    y_detect_test.append([1])
 
 # reshape using matlab order
 x_train_reshape = x_train.reshape(x_train.shape[0], 1, 28, 28, order="A")
@@ -95,7 +100,7 @@ gc.collect()
 # Train OneClassSVM to detect whether an image contains a character or not
 from sklearn.ensemble import IsolationForest
 
-split_size = int(x_test.shape[0]/100)
+split_size = int(x_test.shape[0]/3)
 
 x_test_split1 = []
 
@@ -104,7 +109,29 @@ for i in range(split_size):
 
 
 text_detector = IsolationForest(n_estimators=10, verbose=100, n_jobs=-1)
-text_detector.fit(x_test_split1, test_labels)
+text_detector.fit(x_test_split1, y_detect_test)
 
+y_train_predict = text_detector.predict(x_train)
 
-    
+# Based on a quick calculation, achieved an accuracy of 88% in text detection. Will try again with train set. More accuracy expected there with grid search.
+
+# Testing an image.
+from PIL import Image, ImageOps
+# Open the image and convert to grayscale
+pil_im = Image.open('r_test_image.jpeg').convert('L')
+# Invert image colors
+pil_im = ImageOps.invert(pil_im)
+pil_im.save('r_grayscale.jpeg')
+pil_im = pil_im.resize((28,28))
+pil_im.save('r_grayscale28px.jpeg')
+
+# get pixels values
+pix_val = list(pil_im.getdata())
+
+# pixel vaues in a list
+pix_val_flat = []
+pix_val_flat.append([value for value in pix_val])
+
+test_detect = text_detector.predict(pix_val_flat)
+
+# Write a function to convert background to white. Check if max values are more than 100. If max are more than 100, replace those by 0.
