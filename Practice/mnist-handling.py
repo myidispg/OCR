@@ -51,8 +51,8 @@ train_labels = y_train
 test_labels = y_test
 
 # reshape using matlab order
-x_train = x_train.reshape(x_train.shape[0], 1, 28, 28, order="A")
-x_test = x_test.reshape(x_test.shape[0], 1, 28, 28, order="A")
+x_train_reshape = x_train.reshape(x_train.shape[0], 1, 28, 28, order="A")
+x_test_reshape = x_test.reshape(x_test.shape[0], 1, 28, 28, order="A")
 
 y_train.shape
 
@@ -61,10 +61,23 @@ import keras
 y_train = keras.utils.to_categorical(y_train, 62)
 y_test = keras.utils.to_categorical(y_test, 62)
 
-samplenum = 5437
+samplenum = 0
 import matplotlib.pyplot as plt
 
-img = x_train[samplenum]
+img = x_train_reshape[samplenum]
 
 # visualize image
 plt.imshow(img[0], cmap='gray')
+
+y_demo = train_labels[samplenum]
+y_demo1 = y_train[samplenum]
+
+# Loop to find the index of a label
+index = 0
+
+for i in range(len(train_labels)):
+    if train_labels[i][0] == 34:
+        index = i
+        break
+#-----------------------------
+    
