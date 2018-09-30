@@ -19,3 +19,21 @@ X_test = dataset_test.iloc[:, :].values
 from sklearn import preprocessing
 lb = preprocessing.LabelBinarizer()
 y_train = lb.fit_transform(y_train)
+
+# Generate positive labels for digits
+y_train_pos = []
+
+for char in y_train:
+    y_train_pos.append(1)
+
+
+# Train our OneClassSVM model
+from sklearn.svm import OneClassSVM
+digit_detect = OneClassSVM()
+digit_detect.fit(X_train, y_train_pos)
+
+from sklearn.ensemble import IsolationForest
+digit_detect = IsolationForest(n_estimators=10, verbose=100, n_jobs=-1)
+digit_detect.fit(X_train, y_train_pos)
+
+y_pred = digit_detect.predict(X_test)

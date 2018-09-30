@@ -93,18 +93,18 @@ gc.collect()
 #-----------------------------------------------------------------------------------------
         
 # Train OneClassSVM to detect whether an image contains a character or not
-from sklearn.svm import OneClassSVM
+from sklearn.ensemble import IsolationForest
 
-split_size = int(x_train.shape[0]/100)
+split_size = int(x_test.shape[0]/100)
 
-x_train_split1 = []
+x_test_split1 = []
 
 for i in range(split_size):
-    x_train_split1.append(x_train[i])
+    x_test_split1.append(x_test[i])
 
 
-text_detector = OneClassSVM(kernel='rbf')
-text_detector.fit(x_train_split1, train_labels)
+text_detector = IsolationForest(n_estimators=10, verbose=100, n_jobs=-1)
+text_detector.fit(x_test_split1, test_labels)
 
 
     
