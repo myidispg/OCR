@@ -26,7 +26,7 @@ del y_test_2d
 df_test = pd.concat([df_test, df_y_test], axis=1)
 del df_y_test
 
-df_test.to_csv('Test_Images_with labels', index=False)
+df_test.to_csv('Test_Images_with labels.csv', index=False)
 del df_test
 gc.collect()
 
@@ -41,6 +41,6 @@ gc.collect()
 df_train = pd.concat([df_train, df_y_train], axis=1)
 del df_y_train
 
-df_train.to_csv('Train_Images_with_labels', index=False)
+df_train.to_csv('Train_Images_with_labels.csv', index=False)
 del df_train
 gc.collect()

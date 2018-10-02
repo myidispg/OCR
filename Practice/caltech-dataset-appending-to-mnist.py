@@ -8,7 +8,9 @@ Created on Tue Oct  2 14:11:22 2018
 
 import numpy as np
 import pandas as pd
-from PIL import Image
+from PIL import Image, ImageOps
+import gc
+
 
 images_dict = {
         'accordion': 55,
@@ -39,14 +41,14 @@ images_dict = {
         'crocodile': 50,
         'crocodile_head': 51,
         'cup': 57,
-        'dalmation': 67,
+        'dalmatian': 67,
         'dollar_bill': 52,
         'dolphin': 65,
         'dragonfly': 68,
         'electric_guitar': 75,
         'elephant': 64,
         'emu': 53,
-        'euphonism': 64,
+        'euphonium': 64,
         'ewer': 85,
         'Faces': 435,
         'Faces_easy': 435,
@@ -109,8 +111,8 @@ images_dict = {
         'watch': 239,
         'water_lilly': 37,
         'wheelchair': 57,
-        'wild_cat': 67,
-        'widsor_chair': 56,
+        'wild_cat': 34,
+        'windsor_chair': 56,
         'wrench': 39,
         'yin_yang': 60
         }
@@ -120,6 +122,8 @@ for folder in images_dict:
     total += images_dict[folder]
     
 base_URL = '../Datasets/101_ObjectCategories/' # foldername/image_0000.jpg
+
+pixel_list = []
 
 for folder in images_dict:
     URL = base_URL + folder + '/'
@@ -131,8 +135,32 @@ for folder in images_dict:
             URL = URL + 'image_00' + str(i) + '.jpg'
         else:
             URL = URL + 'image_0' + str(i) + '.jpg'
-  
+        # Open the image in grayscale mode
         im = Image.open(URL).convert('L')
+        # Resize the image to 28x28 pixels
+        im = im.resize((28,28))
+        # Invert the image to increase dataset
+        im_invert = ImageOps.invert(im)
+        
+        # Get pixel value of non-inverted image
+        pix_val_1 = list(im.getdata())
+        # Get pixel value of iameg inverted image
+        pix_val_2 = list(im_invert.getdata())
+        
+        # Append both the image's pixel values with 0 label to a big list.
+        pixel_list.append(pix_val_1)
+        pixel_list.append(pix_val_2)        
+        # Reset URL otherwise it kept appending.
         URL = base_URL + folder + '/'
+
+
+
+del i, base_URL, folder, im, im_invert, images_dict, pix_val_1, pix_val_2, total
+gc.collect()
+
+
+df_images = pd.DataFrame(pixel_list)
+
+df_images.to_csv('Non-text-images.csv', index=False)
         
           
