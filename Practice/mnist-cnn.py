@@ -92,7 +92,7 @@ model.compile(loss=keras.losses.categorical_crossentropy,
               metrics=['accuracy'])
 
 batch_size = 128
-num_epoch = 10
+num_epoch = 2
 #model training
 model.fit(x_test, y_detect_test,
           batch_size=batch_size,
@@ -101,3 +101,56 @@ model.fit(x_test, y_detect_test,
 #          validation_data=(X_test, y_test))
 
 score = model.evaluate(x_test, y_test, verbose=0)
+
+# ------------------Convert the train and test set to csv with labels appended----------
+df_test = pd.DataFrame(x_test)
+del x_test
+df_y_test = pd.DataFrame(y_test_2d)
+del y_test_2d
+
+df_test = pd.concat([df_test, df_y_test], axis=1)
+del df_y_test
+
+df_test.to_csv('Test_Images_with labels', index=False)
+del df_test
+gc.collect()
+
+
+df_train = pd.DataFrame(x_train)
+del x_train
+df_y_train = pd.DataFrame(y_train)
+del y_train
+
+gc.collect()
+
+df_train = pd.concat([df_train, df_y_train], axis=1)
+del df_y_train
+
+df_train.to_csv('Train_Images_with_labels', index=False)
+del df_train
+gc.collect()
+
+#------------------------------------------------------------------------------------
+
+# Testing CNN with a dummy image
+# Testing an image.
+from PIL import Image, ImageOps
+# Open the image and convert to grayscale
+pil_im = Image.open('flower_test_image.jpeg').convert('L')
+# Invert image colors
+pil_im = ImageOps.invert(pil_im)
+pil_im.save('flower_test_image_grayscale.jpeg')
+pil_im = pil_im.resize((28,28))
+pil_im.save('flower_test_image_grayscale28px.jpeg')
+
+# get pixels values
+pix_val = list(pil_im.getdata())
+
+# pixel vaues in a list
+pix_val_flat = []
+pix_val_flat.append([value for value in pix_val])
+
+pix_val = np.asarray(pix_val)
+pix_val = pix_val.reshape(1,28,28,1)
+
+test_detect = model.predict(pix_val)

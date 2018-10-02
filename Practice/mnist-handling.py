@@ -164,7 +164,8 @@ for i in range(len(x_train_4l)):
     
 del white_count, black_count, percentages_white, i, pix
 gc.collect()
-#----Found %of0-60.71428571428571------------------------------------------------------------    
+#----Found %of0-60.71428571428571------------------------------------------------------------ 
+   
 #-----------Now, we can replace all less that 100 by 0 in test image------------------------
 for i in range(len(pix_val_flat[0])):
     pix_val_flat[0][i] = 0 if (pix_val_flat[0][i] < 100) else pix_val_flat[0][i]
