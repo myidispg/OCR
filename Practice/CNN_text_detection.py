@@ -102,3 +102,82 @@ model.fit(X_train, y_train,
           batch_size=batch_size,
           epochs=num_epoch,
           verbose=100)
+
+del concat_array, batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch
+gc.collect()
+
+#---------------------------------------------------------------------------------
+# Testing CNN with a dummy image
+# Testing an image.
+from PIL import Image, ImageOps
+# Open the image and convert to grayscale
+image_r = Image.open('r-text-test.jpeg').convert('L')
+image_r = image_r.resize((28,28))
+
+image_g = Image.open('g-text-test.jpeg').convert('L')
+image_g = image_g.resize((28,28))
+
+
+# get pixels values
+pix_val_r = list(image_r.getdata())
+pix_val_g = list(image_g.getdata())
+
+# Invert image colors only if amount of white is more than 60.71 %
+count_white = 0
+for i in range(len(pix_val)):
+    
+
+image_r = ImageOps.invert(image_r)
+image_g = ImageOps.invert(image_g)
+# pil_im.save('r-text-test-grayscale.jpeg')
+
+# pil_im.save('r-text-test-grayscale28px.jpeg')
+
+image_r.save('r-text-test-bw-28.jpeg')
+image_g.save('g-text-test-bw-28.jpeg')
+
+# Replace all pixel values less than 100 with 0.
+count = 0
+for i in range(len(pix_val_r)):
+    if pix_val_r[i] < 100:
+        count += 1
+        pix_val_r[i] = 0
+        
+count = 0
+for i in range(len(pix_val_g)):
+    if pix_val_g[i] < 100:
+        count += 1
+        pix_val_g[i] = 0
+
+del i, count
+gc.collect()
+
+pix_val_g = np.asarray(pix_val_g)
+pix_val_g = pix_val_g.reshape(1,28,28,1)
+
+test_detect_g = model.predict(pix_val_g)
+
+#---------- Just a script to test text detection in images----------------
+
+img = Image.open('n-text-test.jpeg').convert('L')
+img = img.resize((28,28))
+img = ImageOps.invert(img)
+pix_val = list(img.getdata())
+count = 0
+for i in range(len(pix_val)):
+    if pix_val[i] < 170:
+        count += 1
+        pix_val[i] = 0
+
+del i, count
+gc.collect()
+
+pix_val = np.asarray(pix_val)
+pix_val = pix_val.reshape(1, 28,28,1)
+
+test_detect = model.predict(pix_val)
+
+
+# Points- Make sure the images have background as 0. 
+# Images with white background and colored text are easilly classified. They are inverted so text is made white and background is black.
+# Therefore, make sure that the background has pixel values of 0 and text has more than 160 or 170.
