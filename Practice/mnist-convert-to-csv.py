@@ -18,6 +18,8 @@ x_test = x_test.astype(np.int64)
 # load test labels
 y_test_2d = emnist["dataset"][0][0][1][0][0][1]
 
+
+# Convert the train and test data to pandas dataframe and then write to a csv file. 
 df_test = pd.DataFrame(x_test)
 del x_test
 df_y_test = pd.DataFrame(y_test_2d)

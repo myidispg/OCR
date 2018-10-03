@@ -12,6 +12,7 @@ import keras
 import gc
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+import pickle
 
 # Importing the datasets
 text_dataset = pd.read_csv('../Datasets/Test_Images_with_labels.csv')
@@ -49,7 +50,7 @@ X_train = concat_array[:, :-1]
 y_train = concat_array[:, 784]
 
 # Delete unnecessary data
-del labels_list, df_train
+del labels_list, df_train, concat_array
 gc.collect()
 
 # Some dimensions
@@ -103,8 +104,17 @@ model.fit(X_train, y_train,
           epochs=num_epoch,
           verbose=100)
 
-del concat_array, batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch
+# save the model to disk
+model.save('text_detection_model.h5')
+
+del batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch, model
 gc.collect()
+
+# load the model from disk
+from keras.models import load_model
+
+detection_model = load_model('text_detection_model.h5')
+detection_model.summary()
 
 #---------------------------------------------------------------------------------
 # Testing CNN with a dummy image
@@ -117,15 +127,18 @@ image_r = image_r.resize((28,28))
 image_g = Image.open('g-text-test.jpeg').convert('L')
 image_g = image_g.resize((28,28))
 
-
 # get pixels values
 pix_val_r = list(image_r.getdata())
 pix_val_g = list(image_g.getdata())
 
-# Invert image colors only if amount of white is more than 60.71 %
+
+
+# Invert image colors only if amount of black is more than 60.71 %
 count_white = 0
+count_black = 0
 for i in range(len(pix_val)):
     
+new_img = preprocess_image(pix_val_r)
 
 image_r = ImageOps.invert(image_r)
 image_g = ImageOps.invert(image_g)
@@ -155,11 +168,11 @@ gc.collect()
 pix_val_g = np.asarray(pix_val_g)
 pix_val_g = pix_val_g.reshape(1,28,28,1)
 
-test_detect_g = model.predict(pix_val_g)
+test_detect_g = detection_model.predict(pix_val_g)
 
 #---------- Just a script to test text detection in images----------------
 
-img = Image.open('n-text-test.jpeg').convert('L')
+img = Image.open('g-text-test.jpeg').convert('L')
 img = img.resize((28,28))
 img = ImageOps.invert(img)
 pix_val = list(img.getdata())
@@ -175,9 +188,31 @@ gc.collect()
 pix_val = np.asarray(pix_val)
 pix_val = pix_val.reshape(1, 28,28,1)
 
-test_detect = model.predict(pix_val)
+test_detect = detection_model.predict(pix_val)
 
 
 # Points- Make sure the images have background as 0. 
 # Images with white background and colored text are easilly classified. They are inverted so text is made white and background is black.
 # Therefore, make sure that the background has pixel values of 0 and text has more than 160 or 170.
+
+def preprocess_image(pix_val):
+    count_white = 0
+    count_black = 0
+    for pix in pix_val:
+        if pix >= 160:
+            count_white += 1
+        else:
+            count_black += 1
+    print('count_white- ' + str(count_white))
+    print('count_black- ' + str(count_black))
+    
+    # if count_black<count_white, invert the image and then return the numpy array in proper shape.
+    if count_black < count_white:
+        pix_val = invert_img_pix_list(pix_val)
+        
+    return pix_val
+
+def invert_img_pix_list(pix_list):
+    print('yes')
+    for i in range(len(pix_list)):
+        pix_list[i] = 255-pix_list[i]
