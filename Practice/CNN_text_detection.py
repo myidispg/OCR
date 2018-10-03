@@ -12,7 +12,6 @@ import keras
 import gc
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-import pickle
 
 # Importing the datasets
 text_dataset = pd.read_csv('../Datasets/Test_Images_with_labels.csv')
@@ -117,58 +116,6 @@ detection_model = load_model('text_detection_model.h5')
 detection_model.summary()
 
 #---------------------------------------------------------------------------------
-# Testing CNN with a dummy image
-# Testing an image.
-from PIL import Image, ImageOps
-# Open the image and convert to grayscale
-image_r = Image.open('r-text-test.jpeg').convert('L')
-image_r = image_r.resize((28,28))
-
-image_g = Image.open('g-text-test.jpeg').convert('L')
-image_g = image_g.resize((28,28))
-
-# get pixels values
-pix_val_r = list(image_r.getdata())
-pix_val_g = list(image_g.getdata())
-
-
-
-# Invert image colors only if amount of black is more than 60.71 %
-count_white = 0
-count_black = 0
-for i in range(len(pix_val)):
-    
-new_img = preprocess_image(pix_val_r)
-
-image_r = ImageOps.invert(image_r)
-image_g = ImageOps.invert(image_g)
-# pil_im.save('r-text-test-grayscale.jpeg')
-
-# pil_im.save('r-text-test-grayscale28px.jpeg')
-
-image_r.save('r-text-test-bw-28.jpeg')
-image_g.save('g-text-test-bw-28.jpeg')
-
-# Replace all pixel values less than 100 with 0.
-count = 0
-for i in range(len(pix_val_r)):
-    if pix_val_r[i] < 100:
-        count += 1
-        pix_val_r[i] = 0
-        
-count = 0
-for i in range(len(pix_val_g)):
-    if pix_val_g[i] < 100:
-        count += 1
-        pix_val_g[i] = 0
-
-del i, count
-gc.collect()
-
-pix_val_g = np.asarray(pix_val_g)
-pix_val_g = pix_val_g.reshape(1,28,28,1)
-
-test_detect_g = detection_model.predict(pix_val_g)
 
 #---------- Just a script to test text detection in images----------------
 
@@ -192,14 +139,14 @@ test_detect = detection_model.predict(pix_val)
 
 
 # Points- Make sure the images have background as 0. 
-# Images with white background and colored text are easilly classified. They are inverted so text is made white and background is black.
+# Images with white background and colored text are easily classified. They are inverted so text is made white and background is black.
 # Therefore, make sure that the background has pixel values of 0 and text has more than 160 or 170.
 
 def preprocess_image(pix_val):
     count_white = 0
     count_black = 0
     for pix in pix_val:
-        if pix >= 160:
+        if pix >= 127:
             count_white += 1
         else:
             count_black += 1
@@ -208,11 +155,35 @@ def preprocess_image(pix_val):
     
     # if count_black<count_white, invert the image and then return the numpy array in proper shape.
     if count_black < count_white:
-        pix_val = invert_img_pix_list(pix_val)
+        pix_val = list(invert_img_pix_list(pix_val))
         
+    # Now that the image inversion is done, we will change any pixel values less that 160 to 0.
+    for i in range(len(pix_val)):
+        pix_val[i] = 0 if pix_val[i] < 170 else pix_val[i]
+        
+    # Convert to numpy array and then reshape to 1x28x28x1 as required by Conv Net.
+    pix_val = np.asarray(pix_val)
+    pix_val = pix_val.reshape(1, 28, 28, 1)
+    
     return pix_val
 
 def invert_img_pix_list(pix_list):
     print('yes')
     for i in range(len(pix_list)):
         pix_list[i] = 255-pix_list[i]
+    return pix_list
+
+# Final pipeline for opening, processing the image and then text_detection.
+from PIL import Image
+
+# Open the image and convert to grayscale.
+img = Image.open('g-text-test.jpeg').convert('L')
+img = img.resize((28,28))
+# Get list of pixel values
+pix_val = list(img.getdata())
+
+pix_val = preprocess_image(pix_val)
+test_detect = detection_model.predict(pix_val)
+
+# The current approach is not working, let us try with background of mnist images inverted.
+    
