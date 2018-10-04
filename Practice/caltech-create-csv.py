@@ -161,6 +161,6 @@ gc.collect()
 
 df_images = pd.DataFrame(pixel_list)
 
-df_images.to_csv('Non-text-images.csv', index=False)
+df_images.to_csv('../Datasets/Non-text-images.csv', index=False)
         
           
