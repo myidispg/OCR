@@ -14,11 +14,11 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 
 # Importing the datasets
-text_dataset = pd.read_csv('../Datasets/Test_Images_with_labels.csv')
+text_dataset = pd.read_csv('../Datasets/Test_Images_with_labels_invert.csv')
 img_dataset = pd.read_csv('../Datasets/Non-text-images.csv')
 
 # Drop the label column because it is not useful
-text_dataset = text_dataset.drop(['0.1'], axis=1)
+text_dataset = text_dataset.drop(['784'], axis=1)
 
 # Create a list of labels with 1 for text and 0 for non-text
 labels_list = []
