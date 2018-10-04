@@ -106,7 +106,7 @@ model.fit(X_train, y_train,
 # save the model to disk
 model.save('text_detection_model.h5')
 
-del batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch, model
+del batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch, model, X_train, y_train
 gc.collect()
 
 # load the model from disk
@@ -173,11 +173,24 @@ def invert_img_pix_list(pix_list):
         pix_list[i] = 255-pix_list[i]
     return pix_list
 
+#----------------Process Image v2.0--------------------------
+def preprocess_image(pix_val):
+        
+    # for i in range(len(pix_val)):
+        # pix_val[i] = 0 if pix_val[i] <= 160 else 255
+        
+    # Convert to numpy array and then reshape to 1x28x28x1 as required by Conv Net.
+    pix_val = np.asarray(pix_val)
+    pix_val = pix_val.reshape(1, 28, 28, 1)
+    
+    return pix_val
+#------------------------------------------------------------
+
 # Final pipeline for opening, processing the image and then text_detection.
 from PIL import Image
 
 # Open the image and convert to grayscale.
-img = Image.open('g-text-test.jpeg').convert('L')
+img = Image.open('../Test Images/a-text-test.jpeg').convert('L')
 img = img.resize((28,28))
 # Get list of pixel values
 pix_val = list(img.getdata())
