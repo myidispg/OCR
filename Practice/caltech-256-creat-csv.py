@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Oct  4 16:39:26 2018
-
 @author: myidispg
 """
 
@@ -236,7 +235,7 @@ df_final = pd.concat([img_101, img_256], axis=0)
 del img_101, img_256
 gc.collect()
 
-df_final.to_csv('../Datasets/Non-text-images.csv')
+df_final.to_csv('../Datasets/Non-text-images.csv', index=False)
 
 del df_final
 gc.collect()
@@ -246,4 +245,3 @@ if os.path.exists('../Datasets/Non-text-images-101.csv'):
     os.remove("../Datasets/Non-text-images-101.csv")
 if os.path.exists('../Datasets/Non-text-images-256.csv'):
     os.remove('../Datasets/Non-text-images-256.csv')
-

@@ -101,7 +101,7 @@ num_epoch = 2
 model.fit(X_train, y_train,
           batch_size=batch_size,
           epochs=num_epoch,
-          verbose=100)
+          verbose=10)
 
 # save the model to disk
 model.save('text_detection_model.h5')
@@ -176,8 +176,8 @@ def invert_img_pix_list(pix_list):
 #----------------Process Image v2.0--------------------------
 def preprocess_image(pix_val):
         
-    # for i in range(len(pix_val)):
-        # pix_val[i] = 0 if pix_val[i] <= 160 else 255
+    for i in range(len(pix_val)):
+        pix_val[i] = 0 if pix_val[i] <= 140 else pix_val[i]
         
     # Convert to numpy array and then reshape to 1x28x28x1 as required by Conv Net.
     pix_val = np.asarray(pix_val)
@@ -190,7 +190,7 @@ def preprocess_image(pix_val):
 from PIL import Image
 
 # Open the image and convert to grayscale.
-img = Image.open('../Test Images/a-text-test.jpeg').convert('L')
+img = Image.open('../Test Images/11-non-text-test.jpeg').convert('L')
 img = img.resize((28,28))
 # Get list of pixel values
 pix_val = list(img.getdata())
@@ -200,3 +200,5 @@ test_detect = detection_model.predict(pix_val)
 
 # The current approach is not working, let us try with background of mnist images inverted.
     
+correct - 0 + 1 + 1 + 1 + 1 + 
+incorrect - 0 + 1 + 1 + 1 + 1 + 1 + 1 + 1 +  
