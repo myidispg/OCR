@@ -20,9 +20,17 @@ img_dataset = pd.read_csv('../Datasets/Non-text-images.csv')
 # Drop the label column because it is not useful
 text_dataset = text_dataset.drop(['784'], axis=1)
 
+# Drop multiple rows in text set to make its number equal to img set.
+row_drop_list = []
+for i in range(img_dataset.shape[0], text_dataset.shape[0]):
+    row_drop_list.append(i)
+
+text_dataset = text_dataset.drop(row_drop_list)
+
 # Create a list of labels with 1 for text and 0 for non-text
 labels_list = []
 
+# for i in range(text_dataset.shape[0]):
 for i in range(text_dataset.shape[0]):
     labels_list.append(1)
 for i in range(img_dataset.shape[0]):
@@ -34,7 +42,7 @@ labels_list = np.asarray(labels_list)
 df_train = pd.concat([text_dataset, img_dataset])
 
 # Delete unnecessary data
-del i, img_dataset, text_dataset
+del i, img_dataset, text_dataset, row_drop_list
 gc.collect()
 
 # Get numpy arrays.
@@ -44,6 +52,8 @@ y_train = labels_list
 # Concatenating the data and labels to shuffle
 y_train = y_train.reshape(y_train.shape[0], 1)
 concat_array = np.concatenate([X_train, y_train], axis=1)
+
+np.random.shuffle(concat_array)
 
 X_train = concat_array[:, :-1]
 y_train = concat_array[:, 784]
@@ -106,7 +116,71 @@ model.fit(X_train, y_train,
 # save the model to disk
 model.save('text_detection_model.h5')
 
-del batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch, model, X_train, y_train
+model = Sequential()
+model.add(Conv2D(32, kernel_size=(3,3), activation='relu', input_shape = input_shape))
+model.add(Conv2D(32, kernel_size=(3,3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Dropout(0.25))
+model.add(Conv2D(32, kernel_size=(3,3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Dropout(0.25))
+model.add(Flatten())
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(num_classes, activation='softmax'))
+
+
+model.summary()
+
+model.compile(loss='binary_crossentropy',
+              optimizer='adam',
+              metrics=['accuracy'])
+
+batch_size = 128
+num_epoch = 5
+#model training
+model.fit(X_train, y_train,
+          batch_size=batch_size,
+          epochs=num_epoch,
+          verbose=2)
+
+model.save('text_detection_model.h5')
+
+# Initialising the CNN
+classifier = Sequential()
+# Step 1 - Convolution
+classifier.add(Conv2D(8, (5,5), input_shape = input_shape, activation = 'relu'))
+# Step 2 - Pooling
+classifier.add(MaxPooling2D(pool_size = (2, 2)))
+# Adding a second convolutional layer
+classifier.add(Dropout(0.25))
+classifier.add(Conv2D(16, (5, 5), activation = 'relu'))
+classifier.add(MaxPooling2D(pool_size = (2, 2)))
+# Step 3 - Flattening
+classifier.add(Flatten())
+# Step 4 - Full connection
+classifier.add(Dense(units = 128, activation = 'relu'))
+classifier.add(Dense(units = 2, activation = 'sigmoid'))
+# Compiling the CNN
+classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+classifier.summary()
+
+classifier.compile(loss='binary_crossentropy',
+              optimizer='adam',
+              metrics=['accuracy'])
+
+batch_size = 128
+num_epoch = 5
+#model training
+classifier.fit(X_train, y_train,
+          batch_size=batch_size,
+          epochs=num_epoch,
+          verbose=2)
+
+classifier.save('text_detection_model.h5')
+
+del batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch, classifier, X_train, y_train
 gc.collect()
 
 # load the model from disk
@@ -176,8 +250,8 @@ def invert_img_pix_list(pix_list):
 #----------------Process Image v2.0--------------------------
 def preprocess_image(pix_val):
         
-    for i in range(len(pix_val)):
-        pix_val[i] = 0 if pix_val[i] <= 140/255 else pix_val[i]/255
+    # for i in range(len(pix_val)):
+       # pix_val[i] = 0 if pix_val[i] <= 140/255 else pix_val[i]/255
         
     # Convert to numpy array and then reshape to 1x28x28x1 as required by Conv Net.
     pix_val = np.asarray(pix_val)
@@ -190,7 +264,7 @@ def preprocess_image(pix_val):
 from PIL import Image
 
 # Open the image and convert to grayscale.
-img = Image.open('../Test Images/o-text-test.jpeg').convert('L')
+img = Image.open('../Test Images/a-text-test.jpeg').convert('L')
 img = img.resize((28,28))
 # Get list of pixel values
 pix_val = list(img.getdata())
@@ -199,3 +273,13 @@ pix_val = preprocess_image(pix_val)/255
 test_detect = detection_model.predict(pix_val)
 
 # The current approach is not working, let us try with background of mnist images inverted.
+
+
+# Without-
+
+obj- 4(3,4,5,11)
+text- 
+
+# With-
+obj- 11
+text- None
