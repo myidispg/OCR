@@ -12,6 +12,14 @@ import gc
 
 import os
 
+# ----------Bring the image to MNSIT format--------------------
+def preprocess_image(pix_val):
+        
+    for i in range(len(pix_val)):
+       pix_val[i] = 0 if pix_val[i] <= 140 else pix_val[i]
+        
+    return pix_val
+
 # ----------CSV for Caltech101 Database------------------------------------
 images_dict = {
         'accordion': 55,
@@ -145,12 +153,16 @@ for folder in images_dict:
         
         # Get pixel value of non-inverted image
         pix_val_1 = list(im.getdata())
+        pix_val_1_1= preprocess_image(pix_val_1)
         # Get pixel value of iameg inverted image
         pix_val_2 = list(im_invert.getdata())
+        pix_val_2_1 = preprocess_image(pix_val_2)
         
         # Append both the image's pixel values with 0 label to a big list.
         pixel_list.append(pix_val_1)
-        pixel_list.append(pix_val_2)        
+        pixel_list.append(pix_val_2)
+        pixel_list.append(pix_val_1_1)
+        pixel_list.append(pix_val_2_1)       
         # Reset URL otherwise it kept appending.
         URL = base_URL + folder + '/'
 
@@ -205,14 +217,17 @@ for folder in img_dict:
         # Invert the image to increase dataset
         im_invert = ImageOps.invert(im)
         
-        # Get pixel value of non-inverted image
         pix_val_1 = list(im.getdata())
+        pix_val_1_1= preprocess_image(pix_val_1)
         # Get pixel value of iameg inverted image
         pix_val_2 = list(im_invert.getdata())
+        pix_val_2_1 = preprocess_image(pix_val_2)
         
         # Append both the image's pixel values with 0 label to a big list.
         pixel_list.append(pix_val_1)
-        pixel_list.append(pix_val_2)        
+        pixel_list.append(pix_val_2)
+        pixel_list.append(pix_val_1_1)
+        pixel_list.append(pix_val_2_1)            
         # Reset URL otherwise it kept appending.
         URL = BASE_URL + folder + '/'
 
@@ -235,7 +250,7 @@ df_final = pd.concat([img_101, img_256], axis=0)
 del img_101, img_256
 gc.collect()
 
-df_final.to_csv('../Datasets/Non-text-images.csv', index=False)
+df_final.to_csv('../Datasets/Non-text-images-1.csv', index=False)
 
 del df_final
 gc.collect()

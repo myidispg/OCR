@@ -15,9 +15,9 @@ from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 
 # Importing the datasets
 text_dataset = pd.read_csv('../Datasets/Test_Images_with_labels_invert.csv')
-img_dataset = pd.read_csv('../Datasets/Non-text-images.csv')
+img_dataset = pd.read_csv('../Datasets/Non-text-images-1.csv')
 
-# Drop the label column because it is not useful
+# Drop the label column which tells the class out of 62 classes. Not useful here.
 text_dataset = text_dataset.drop(['784'], axis=1)
 
 # Drop multiple rows in text set to make its number equal to img set.
@@ -42,12 +42,15 @@ labels_list = np.asarray(labels_list)
 df_train = pd.concat([text_dataset, img_dataset])
 
 # Delete unnecessary data
-del i, img_dataset, text_dataset, row_drop_list
+del i, img_dataset, text_dataset
 gc.collect()
 
 # Get numpy arrays.
 X_train = df_train.iloc[:,:].values
 y_train = labels_list
+
+del df_train, labels_list
+gc.collect()
 
 # Concatenating the data and labels to shuffle
 y_train = y_train.reshape(y_train.shape[0], 1)
@@ -59,7 +62,7 @@ X_train = concat_array[:, :-1]
 y_train = concat_array[:, 784]
 
 # Delete unnecessary data
-del labels_list, df_train, concat_array
+del concat_array
 gc.collect()
 
 # Some dimensions
@@ -101,7 +104,7 @@ model.add(Dense(num_classes, activation='softmax'))
 model.summary()
 # Adaptive learning rate (adaDelta) is a popular form of gradient descent rivaled only by adam and adagrad
 # Binary Cross Entrpy since we have only 2 classes
-model.compile(loss=keras.losses.binary_crossentropy,
+model.compile(loss='binary_crossentropy',
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
@@ -111,10 +114,12 @@ num_epoch = 2
 model.fit(X_train, y_train,
           batch_size=batch_size,
           epochs=num_epoch,
-          verbose=10)
+          verbose=2)
 
 # save the model to disk
 model.save('text_detection_model.h5')
+
+#-----------TEST MODELS----------------------------------------------------
 
 model = Sequential()
 model.add(Conv2D(32, kernel_size=(3,3), activation='relu', input_shape = input_shape))
@@ -178,9 +183,33 @@ classifier.fit(X_train, y_train,
           epochs=num_epoch,
           verbose=2)
 
-classifier.save('text_detection_model.h5')
+model = Sequential()
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
+model.add(Dropout(0.5))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Dropout(0.5))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Dropout(0.5))
+model.add(Flatten())
+model.add(Dense(64, activation='relu'))
+model.add(Dense(1, activation='softmax'))
+model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
 
-del batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch, classifier, X_train, y_train
+model.summary()
+
+batch_size = 128
+num_epoch = 5
+#model training
+model.fit(X_train, y_train,
+          batch_size=batch_size,
+          epochs=num_epoch,
+          verbose=2)
+
+model.save('text_detection_model.h5')
+#-----------------------------TEST MODELS END--------------------------------------
+del batch_size, img_cols, img_rows, input_shape, num_classes, num_epoch,model, X_train, y_train
 gc.collect()
 
 # load the model from disk
@@ -250,8 +279,12 @@ def invert_img_pix_list(pix_list):
 #----------------Process Image v2.0--------------------------
 def preprocess_image(pix_val):
         
-    # for i in range(len(pix_val)):
-       # pix_val[i] = 0 if pix_val[i] <= 140/255 else pix_val[i]/255
+    #for i in range(len(pix_val)):
+       # pix_val[i] = 0 if pix_val[i] <= 140 else pix_val[i]/255
+       #if pix_val[i] <= 100:
+          # pix_val[i] = 0
+       #else:
+          # pix_val[i] /= 255
         
     # Convert to numpy array and then reshape to 1x28x28x1 as required by Conv Net.
     pix_val = np.asarray(pix_val)
@@ -264,7 +297,7 @@ def preprocess_image(pix_val):
 from PIL import Image
 
 # Open the image and convert to grayscale.
-img = Image.open('../Test Images/a-text-test.jpeg').convert('L')
+img = Image.open('../Test Images/w-text-test.jpeg').convert('L')
 img = img.resize((28,28))
 # Get list of pixel values
 pix_val = list(img.getdata())
@@ -273,13 +306,3 @@ pix_val = preprocess_image(pix_val)/255
 test_detect = detection_model.predict(pix_val)
 
 # The current approach is not working, let us try with background of mnist images inverted.
-
-
-# Without-
-
-obj- 4(3,4,5,11)
-text- 
-
-# With-
-obj- 11
-text- None
