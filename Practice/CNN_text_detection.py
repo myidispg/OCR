@@ -285,10 +285,12 @@ def preprocess_image(pix_val):
           # pix_val[i] = 0
        #else:
           # pix_val[i] /= 255
-        
-    # Convert to numpy array and then reshape to 1x28x28x1 as required by Conv Net.
+          
     pix_val = np.asarray(pix_val)
     pix_val = pix_val.reshape(1, 28, 28, 1)
+        
+    # Convert to numpy array and then reshape to 1x28x28x1 as required by Conv Net.
+    
     
     return pix_val
 #------------------------------------------------------------
@@ -305,4 +307,24 @@ pix_val = list(img.getdata())
 pix_val = preprocess_image(pix_val)/255
 test_detect = detection_model.predict(pix_val)
 
-# The current approach is not working, let us try with background of mnist images inverted.
+non - 1 + 0 + 1 + 0 + 1 + 0 + 0 + 0 + 0 + 1 + 0 = 45%
+text- 1 + 1 + 0 + 1 + 1 + 1 + 1 + 1 + 1 + 1 = 90% 
+
+def find_text_presence(file_path):
+    """
+    Function to find whether the given image consists of a text or not.
+    This is the most basic level of text detection.
+    input- Takes teh file path as input
+    Returns 0 for no text, 1 for text.
+    """
+    from PIL import Image
+    img = Image.open(file_path).convert('L')
+    img = img.resize((28,28))
+    # Get list of pixel values
+    pix_val = list(img.getdata())
+    pix_val = np.asarray(pix_val)
+    pix_val = pix_val.reshape(1, 28, 28, 1)
+    pix_val = preprocess_image(pix_val)/255
+    test_detect = detection_model.predict(pix_val)
+    
+    np.argmax(test_detect)
