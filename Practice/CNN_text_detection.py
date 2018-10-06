@@ -327,4 +327,6 @@ def find_text_presence(file_path):
     pix_val = preprocess_image(pix_val)/255
     test_detect = detection_model.predict(pix_val)
     
-    np.argmax(test_detect)
+    return np.argmax(test_detect)
+    
+print(find_text_presence('../Test Images/1-non-text-test.jpeg'))
