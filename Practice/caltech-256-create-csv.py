@@ -328,3 +328,7 @@ if os.path.exists('../Datasets/Non-text-images-101.csv'):
     os.remove("../Datasets/Non-text-images-101.csv")
 if os.path.exists('../Datasets/Non-text-images-256.csv'):
     os.remove('../Datasets/Non-text-images-256.csv')
+if os.path.exists('../Datasets/Non-text-images-Stanford.csv'):
+    os.remove("../Datasets/Non-text-images-Stanford.csv")
+if os.path.exists('../Datasets/Non-text-images-STL.csv'):
+    os.remove('../Datasets/Non-text-images-STL.csv')
