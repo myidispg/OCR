@@ -29,7 +29,7 @@ def shift(img,sx,sy):
     return shifted
 
 # read the image
-gray = cv2.imread('../Test Images/a-text-test.jpeg', 0) # 0 is for grayscale read. # 1 for color image without any transparency. -1 for image without any changes
+gray = cv2.imread('../Test Images/5-non-text-test.jpeg', 0) # 0 is for grayscale read. # 1 for color image without any transparency. -1 for image without any changes
 
 # rescale it
 gray = cv2.resize(255-gray, (28,28))
@@ -70,6 +70,6 @@ gray = np.lib.pad(gray,(rowsPadding,colsPadding),'constant')
 shiftx,shifty = getBestShift(gray)
 shifted = shift(gray,shiftx,shifty)
 gray = shifted
-cv2.imwrite("../Test Images/pro-g-text-test.jpeg", gray)
+cv2.imwrite("../Test Images/pro-5-non-text-test.jpeg", gray)
 
 

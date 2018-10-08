@@ -12,6 +12,7 @@ import keras
 import gc
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+import ImageProcess
 
 # Importing the datasets
 text_dataset = pd.read_csv('../Datasets/Test_Images_with_labels_invert.csv')
@@ -215,4 +216,19 @@ def find_text_presence(file_path):
     return np.argmax(test_detect)
     
 print(find_text_presence('../Test Images/3-non-text-test.jpeg'))
+
+def text_detect(image_path, detector_model):
+    from PIL import Image, ImageOps
+    img = Image.open(image_path).convert('L')
+    img = ImageOps.invert(img)
+    pix_val = list(img.getdata())
+    pix_val = np.asarray(pix_val)/255
+    pix_val = pix_val.reshape(1,28,28,1)
+    
+    test_detect = detector_model.predict(pix_val)
+    
+    return True if np.argmax(test_detect) == 1 else False
+
+text_detect('../Test Images/pro-g-text-test.jpeg', detection_model)    
+    
 
