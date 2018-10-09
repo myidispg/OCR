@@ -149,20 +149,16 @@ for folder in images_dict:
         # Resize the image to 28x28 pixels
         im = im.resize((28,28))
         # Invert the image to increase dataset
-        # im_invert = ImageOps.invert(im)
+        im_invert = ImageOps.invert(im)
         
         # Get pixel value of non-inverted image
         pix_val_1 = list(im.getdata())
-        # pix_val_1_1= preprocess_image(pix_val_1)
         # Get pixel value of image inverted image
-        # pix_val_2 = list(im_invert.getdata())
-        # pix_val_2_1 = preprocess_image(pix_val_2)
+        pix_val_2 = list(im_invert.getdata())
         
         # Append both the image's pixel values with 0 label to a big list.
         pixel_list.append(pix_val_1)
-        # pixel_list.append(pix_val_2)
-        #pixel_list.append(pix_val_1_1)
-        #pixel_list.append(pix_val_2_1)       
+        
         # Reset URL otherwise it kept appending.
         URL = base_URL + folder + '/'
 
@@ -216,19 +212,16 @@ for folder in img_dict:
         # Resize the image to 28x28 pixels
         im = im.resize((28,28))
         # Invert the image to increase dataset
-        # im_invert = ImageOps.invert(im)
+        im_invert = ImageOps.invert(im)
         
+        # Get pixel value of non-inverted image
         pix_val_1 = list(im.getdata())
-        #pix_val_1_1= preprocess_image(pix_val_1)
-        # Get pixel value of iameg inverted image
-        # pix_val_2 = list(im_invert.getdata())
-        #pix_val_2_1 = preprocess_image(pix_val_2)
+        # Get pixel value of image inverted image
+        pix_val_2 = list(im_invert.getdata())
         
         # Append both the image's pixel values with 0 label to a big list.
         pixel_list.append(pix_val_1)
-        # pixel_list.append(pix_val_2)
-        #pixel_list.append(pix_val_1_1)
-        #pixel_list.append(pix_val_2_1)            
+        
         # Reset URL otherwise it kept appending.
         URL = BASE_URL + folder + '/'
 
