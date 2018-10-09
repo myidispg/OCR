@@ -103,7 +103,7 @@ model.compile(loss='binary_crossentropy',
               metrics=['accuracy'])
 
 batch_size = 128
-num_epoch = 2
+num_epoch = 5
 
 #model training
 model.fit(X_train, y_train,

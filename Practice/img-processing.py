@@ -29,7 +29,7 @@ def shift(img,sx,sy):
     return shifted
 
 # read the image
-gray = cv2.imread('../Test Images/r-text-test.jpeg', 0) # 0 is for grayscale read. # 1 for color image without any transparency. -1 for image without any changes
+gray = cv2.imread('../Test Images/h-text-test.jpeg', 0) # 0 is for grayscale read. # 1 for color image without any transparency. -1 for image without any changes
 
 # rescale it # 255- inverts the image
 gray = cv2.resize(255-gray, (28,28))
