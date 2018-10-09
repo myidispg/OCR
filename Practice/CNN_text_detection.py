@@ -12,7 +12,6 @@ import keras
 import gc
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-import ImageProcess
 
 # Importing the datasets
 text_dataset = pd.read_csv('../Datasets/Test_Images_with_labels_invert.csv')
@@ -21,13 +20,6 @@ img_dataset = pd.read_csv('../Datasets/Non-text-images-2.csv')
 # Drop the label column which tells the class out of 62 classes. Not useful here.
 text_dataset = text_dataset.drop(['784'], axis=1)
 gc.collect()
-
-# Drop multiple rows in text set to make its number equal to img set.
-# row_drop_list = []
-# for i in range(img_dataset.shape[0], text_dataset.shape[0]):
-    # row_drop_list.append(i)
-
-# text_dataset = text_dataset.drop(row_drop_list)
 
 # Create a list of labels with 1 for text and 0 for non-text
 labels_list = []
@@ -163,7 +155,7 @@ gc.collect()
 # load the model from disk
 from keras.models import load_model
 
-detection_model = load_model('text_detection_model.h5')
+detection_model = load_model('text_detection_model-1.h5')
 detection_model.summary()
 
 #---------------------------------------------------------------------------------
@@ -219,8 +211,8 @@ print(find_text_presence('../Test Images/3-non-text-test.jpeg'))
 
 def text_detect(image_path, detector_model):
     from PIL import Image, ImageOps
-    img = Image.open(image_path).convert('L')
-    img = ImageOps.invert(img)
+    img = Image.open(image_path)# .convert('L')
+    # img = ImageOps.invert(img)
     pix_val = list(img.getdata())
     pix_val = np.asarray(pix_val)/255
     pix_val = pix_val.reshape(1,28,28,1)
@@ -229,6 +221,6 @@ def text_detect(image_path, detector_model):
     
     return True if np.argmax(test_detect) == 1 else False
 
-text_detect('../Test Images/pro-g-text-test.jpeg', detection_model)    
+text_detect('../Test Images/pro-5-non-text-test.jpeg', detection_model)    
     
 

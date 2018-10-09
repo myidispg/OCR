@@ -29,11 +29,13 @@ def shift(img,sx,sy):
     return shifted
 
 # read the image
-gray = cv2.imread('../Test Images/5-non-text-test.jpeg', 0) # 0 is for grayscale read. # 1 for color image without any transparency. -1 for image without any changes
+gray = cv2.imread('../Test Images/g-text-test.jpeg', 0) # 0 is for grayscale read. # 1 for color image without any transparency. -1 for image without any changes
 
-# rescale it
+# rescale it # 255- inverts the image
 gray = cv2.resize(255-gray, (28,28))
 # better black and white version
+# 128 is the threshhold value. Above it the value will be 255 and below will be 0. Controlles by THRESH_BINARY
+# cv2.THRESH_OTSU = 
 (thresh, gray) = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
 while np.sum(gray[0]) == 0:
