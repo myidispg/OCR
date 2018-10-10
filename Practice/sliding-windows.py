@@ -12,7 +12,14 @@ import time
 import cv2
 import imutils
 
-img = Image.open()
+def pyramid(image, scale=1.5):
+    yield image
+    
+    while True:
+        w = int(image.shape[1]/scale)
+        image = imutils.resize(image, width=w)
+        
+        yield image
 
 # Suggested step size is 4-8. Examinign each pixel with computationally expensive.
 def sliding_window(image, stepSize, windowSize):
@@ -29,15 +36,15 @@ for resized in pyramid(image, scale = 1.5):
     # loop over each resized window of the image pyramid
     for (x,y, window) in sliding_window(resized, stepSize = 4, windowsSize = (winW, winH)):
         if window.shape[0] != winH or window.shape[1] != winW:
-			continue
+            continue
  
 		# THIS IS WHERE YOU WOULD PROCESS YOUR WINDOW, SUCH AS APPLYING A
 		# MACHINE LEARNING CLASSIFIER TO CLASSIFY THE CONTENTS OF THE
 		# WINDOW
  
 		# since we do not have a classifier, we'll just draw the window
-		clone = resized.copy()
-		cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 255, 0), 2)
-		cv2.imshow("Window", clone)
-		cv2.waitKey(1)
-		time.sleep(0.025)
+        clone = resized.copy()
+        cv2.rectange;(clone, (x,y), (x + winW, y + winH), (0, 255, 0), 2)
+        cv2.imshow("Window", clone)
+        cv2.waitKey(1)
+        time.sleep(0.025)
