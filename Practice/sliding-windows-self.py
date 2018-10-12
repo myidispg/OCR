@@ -44,12 +44,15 @@ def sliding_windows(img, windowSize = 28, stepSize= 4):
         img_shape = img.shape
         
 def sliding_windows(img, windowSize = 28, stepSize= 4):
-    global img_shape
-    img_shape = img.shape
     while img.shape[0] > 28*4 and img.shape[1] > 28*4:
         img = cv2.resize(img, img_pyramid(img, 2))
         print(img.shape)
-        img_shape = img.shape
+        
+        for x in range(0, img.shape[0], stepSize):
+            for y in range(0, img.shape[1], stepSize):
+                winX = x+windowSize
+                winY = y+windowsSize
+        
 
 sliding_windows(img)
 
