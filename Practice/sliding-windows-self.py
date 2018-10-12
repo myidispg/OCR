@@ -19,6 +19,12 @@ def img_pyramid(image, scale):
     
     return image
 
+def img_pyramid(image, scale):
+    if img.shape[0] > 28*4 and img.shape[1] > 28*4:
+        return (int(image.shape[1]/scale), int(image.shape[0]/scale))
+    else:
+        return False
+    
 img = cv2.imread('../Test Images/Wireless Drivers.png', 0)
 
 # Convert the image to the nearest multiple of windows size i.e. 28
@@ -35,6 +41,14 @@ def sliding_windows(img, windowSize = 28, stepSize= 4):
     while img.shape != img_shape:
         print(img.shape)
         img = img_pyramid(img, 1.25)
+        img_shape = img.shape
+        
+def sliding_windows(img, windowSize = 28, stepSize= 4):
+    global img_shape
+    img_shape = img.shape
+    while img.shape[0] > 28*4 and img.shape[1] > 28*4:
+        img = cv2.resize(img, img_pyramid(img, 2))
+        print(img.shape)
         img_shape = img.shape
 
 sliding_windows(img)
