@@ -7,6 +7,7 @@ Created on Thu Oct 11 17:31:18 2018
 """
 
 import cv2
+import numpy as np
 
 def img_pyramid(image, scale):
     if img.shape[0] > 28*4 and img.shape[1] > 28*4:
@@ -44,15 +45,30 @@ def sliding_windows(img, windowSize = 28, stepSize= 4):
         img_shape = img.shape
         
 def sliding_windows(img, windowSize = 28, stepSize= 4):
+    # loop to generate image pyramid with image size reduced by scale
     while img.shape[0] > 28*4 and img.shape[1] > 28*4:
-        img = cv2.resize(img, img_pyramid(img, 2))
+        img = cv2.resize(img, img_pyramid(img, scale = 5))
         print(img.shape)
-        
-        for x in range(0, img.shape[0], stepSize):
-            for y in range(0, img.shape[1], stepSize):
+        # loops to iterate over each column in wach row and run text detection model.
+        for x in range(0, img.shape[0]-windowSize, stepSize):
+            for y in range(0, img.shape[1]-windowSize, stepSize):
+                print(str(x) + ',' + str(y))
                 winX = x+windowSize
-                winY = y+windowsSize
+                winY = y+windowSize
+                new_img = img_numpy_array(img, x, y, windowSize)
+                
+                
         
+def img_numpy_array(img, row, column, windowSize):
+    array = []
+    for x in range(row, row+windowSize):
+        row = []
+        for y in range(column, column+windowSize):
+            row.append(img[x][y])
+        array.append(row)
+    return np.asarray(array)
+
+window = img_numpy_array(img, 10, 10, 5)
 
 sliding_windows(img)
 
