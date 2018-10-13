@@ -33,6 +33,7 @@ img = cv2.imread('../Test Images/Wireless Drivers.png', 0)
 img = cv2.resize(img, (imgW, imgH))
 del imgW, imgH
 # Image dimensions are rows x columns(height X width)
+(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 img = img_pyramid(img, 1.25)
 
 def sliding_windows(img, windowSize = 28, stepSize= 4):
@@ -46,11 +47,12 @@ def sliding_windows(img, windowSize = 28, stepSize= 4):
         
 def sliding_windows(img, detectionModel, windowSize = 28, stepSize= 4):
     # loop to generate image pyramid with image size reduced by scale
+    text_locations= []
     while img.shape[0] > 28*4 and img.shape[1] > 28*4:
         img = cv2.resize(img, img_pyramid(img, scale = 5))
         print(img.shape)
         # loops to iterate over each column in each row and run text detection model.
-        text_locations= []
+        
         for x in range(0, img.shape[0]-windowSize, stepSize):
             for y in range(0, img.shape[1]-windowSize, stepSize):
                 print(str(x) + ',' + str(y))
@@ -80,8 +82,13 @@ from keras.models import load_model
 
 detection_model = load_model('text_detection_model-1.h5')
 detection_model.summary()
-sliding_windows(img, detection_model)
+loc = sliding_windows(img, detection_model)
 
 img = cv2.resize(img, (30,53))
 
+cv2.imwrite('../new_img.jpeg', img)
+#----------------CANNY EDGE DETECTION------------------
+
+img = cv2.imread('../Test Images/Wireless Drivers.png',0)
+img = cv2.Canny(img,100,200)
 cv2.imwrite('../new_img.jpeg', img)
