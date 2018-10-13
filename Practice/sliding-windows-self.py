@@ -44,21 +44,27 @@ def sliding_windows(img, windowSize = 28, stepSize= 4):
         img = img_pyramid(img, 1.25)
         img_shape = img.shape
         
-def sliding_windows(img, windowSize = 28, stepSize= 4):
+def sliding_windows(img, detectionModel, windowSize = 28, stepSize= 4):
     # loop to generate image pyramid with image size reduced by scale
     while img.shape[0] > 28*4 and img.shape[1] > 28*4:
         img = cv2.resize(img, img_pyramid(img, scale = 5))
         print(img.shape)
-        # loops to iterate over each column in wach row and run text detection model.
+        # loops to iterate over each column in each row and run text detection model.
+        text_locations= []
         for x in range(0, img.shape[0]-windowSize, stepSize):
             for y in range(0, img.shape[1]-windowSize, stepSize):
                 print(str(x) + ',' + str(y))
                 winX = x+windowSize
                 winY = y+windowSize
-                new_img = img_numpy_array(img, x, y, windowSize)
-                
-                
-        
+                new_img = img_numpy_array(img, x, y, windowSize).reshape(1,28,28,1)
+                if text_detect(new_img, detectionModel):
+                    text_locations.append([x,y, img.shape])
+    return text_locations
+
+def text_detect(img, detector_model):    
+    test_detect = detector_model.predict(img)
+    return True if np.argmax(test_detect) == 1 else False
+
 def img_numpy_array(img, row, column, windowSize):
     array = []
     for x in range(row, row+windowSize):
@@ -70,5 +76,12 @@ def img_numpy_array(img, row, column, windowSize):
 
 window = img_numpy_array(img, 10, 10, 5)
 
-sliding_windows(img)
+from keras.models import load_model
 
+detection_model = load_model('text_detection_model-1.h5')
+detection_model.summary()
+sliding_windows(img, detection_model)
+
+img = cv2.resize(img, (30,53))
+
+cv2.imwrite('../new_img.jpeg', img)
