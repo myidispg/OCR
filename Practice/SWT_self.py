@@ -169,7 +169,7 @@ for x in range(swt.shape[0]):
             print(False)
             
 import cv2
-img = cv2.imread('../Test Images/scene-text-1.jpeg', 0)
+img = cv2.imread('../Test Images/scene-text-2.jpeg', 0)
 mser = cv2.MSER_create()
 gray_img = img.copy()
 
@@ -177,3 +177,9 @@ regions, _ = mser.detectRegions(img)
 hulls = [cv2.convexHull(p.reshape(-1, 1, 2)) for p in regions]
 cv2.polylines(gray_img, hulls, 1, (0, 0, 255), 2)
 cv2.imwrite('../text.jpg', gray_img) #Saving
+
+word_1 = regions[1]
+
+word_1 = cv2.resize(word_1, (28,28))
+
+cv2.imwrite('../text.jpg', word_1)
