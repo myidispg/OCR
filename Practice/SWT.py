@@ -8,6 +8,8 @@ Created on Sat Oct 13 15:56:35 2018
 import numpy as np
 import cv2
 import math
+from PIL import Image
+import pillowfight
 
 img = cv2.imread('../Test Images/Wireless Drivers.png', 0)
 edges = cv2.Canny(img, 100, 200, apertureSize=3)
@@ -77,10 +79,7 @@ def swt(theta, edges, sobelx64f, sobely64f):
             swt[y,x] = min(median, swt[y,x])
     # Write SWT image
     cv2.imwrite('../new_img.jpeg', swt)
-grad_x = -0.8782427892191462
-grad_y = 549.9618168564068
--grad_x_g[cur_y, cur_x] = 0.9999289580557819
--grad_y_g[cur_y, cur_x] = -755.0536404786086
 
-−0.999955754
-−0.000044246
+image = Image.open('../Test Images/Wireless Drivers.png').convert('L')
+swt_image = pillowfight.swt(image)
+swt_image.save('../swt.png')
