@@ -169,17 +169,31 @@ for x in range(swt.shape[0]):
             print(False)
             
 import cv2
-img = cv2.imread('../Test Images/scene-text-2.jpeg', 0)
+import numpy as np
+img = cv2.imread('../Test Images/a-text-test.jpeg', 0)
+img = cv2.resize(img, (28, 28))
+_, img = cv2.threshold(img, 100, 200, 0)
+#img = cv2.Canny(img, 100, 200)
+#cv2.imwrite('../text.jpg', img)
 mser = cv2.MSER_create()
 gray_img = img.copy()
 
-regions, _ = mser.detectRegions(img)
+regions, boxes = mser.detectRegions(img)
 hulls = [cv2.convexHull(p.reshape(-1, 1, 2)) for p in regions]
 cv2.polylines(gray_img, hulls, 1, (0, 0, 255), 2)
 cv2.imwrite('../text.jpg', gray_img) #Saving
 
-word_1 = regions[1]
+word_1 = regions[5]
 
 word_1 = cv2.resize(word_1, (28,28))
 
 cv2.imwrite('../text.jpg', word_1)
+
+# regions contains all the pixel values where text is detected. Format is ColumnxRow.
+text = []
+for region in regions:
+    char = []
+    for coordinate in region:
+        char.append(img[coordinate[1], coordinate[0]])
+        break
+    text.append(char)
