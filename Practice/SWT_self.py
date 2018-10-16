@@ -170,9 +170,9 @@ for x in range(swt.shape[0]):
             
 import cv2
 import numpy as np
-img = cv2.imread('../Test Images/a-text-test.jpeg', 0)
-img = cv2.resize(img, (28, 28))
-_, img = cv2.threshold(img, 100, 200, 0)
+img = cv2.imread('../Test Images/Wireless Drivers.png', 0)
+#img = cv2.resize(img, (28, 28))
+#_, img = cv2.threshold(img, 100, 200, 0)
 #img = cv2.Canny(img, 100, 200)
 #cv2.imwrite('../text.jpg', img)
 mser = cv2.MSER_create()

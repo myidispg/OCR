@@ -10,6 +10,7 @@ import cv2
 import skimage
 import numpy as np
 import gc
+from opencv_regionprops import Contour
 
 #img = cv2.imread('../Test Images/ReceiptSwiss.jpg',0)
 img = cv2.imread('../Test Images/Wireless Drivers.png',0)
@@ -61,17 +62,92 @@ for stat in mserStats:
     
 EulerNumber = np.asarray(EulerNumber)
 
+del mserStats
+gc.collect()
+
 # Threshold the data to determine which regions to remove
-aspectRatio = np.transpose(aspectRatio)
 
-filterIdx = [prop for prop in aspectRatio if prop > 3]
+# loop to count true in filteridx
+filterIdx = []
 
-new_filterIdx = []
+trueCount = 0
+for filters in filterIdx:
+    if filters == True:
+        trueCount += 1
 
-for (x,y) in (filterIdx, )
+for prop in aspectRatio:
+    filterIdx.append(True if prop > 3 else False) # True count 127
 
-filterIdx = list(np.where(filterIdx or eccentricity > .995))
+for i in range(len(filterIdx)):
+    if filterIdx[i] or eccentricity[i] > .995: # True count 151
+        filterIdx[i] = True
+        
+for i in range(len(filterIdx)):
+    if filterIdx[i] or Solidity[i] < .3: # True count 151
+        filterIdx[i] = True
 
-filterIdx = list(np.where(filterIdx or Solidity > .3))
+for i in range(len(filterIdx)):
+    if filterIdx[i]:
+        if Extent[i] > 0.9 or Extent[i] < 0.2: # True count 151
+          filterIdx[i] = True  
+          
+for i in range(len(filterIdx)):
+    if filterIdx[i] or EulerNumber[i] < -4: # True count 151
+        filterIdx[i] = True
 
-filterIdx = np.where(filterIdx or eccentricity > .995)
+#-------------
+import cv2
+import skimage
+import numpy as np
+import gc
+from opencv_regionprops import Contour
+
+img = cv2.imread('../Test Images/Wireless Drivers.png',0)
+(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+contours = cv2.findContours(img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
+
+bbox = []
+for cnt in contours[1]:
+    c = Contour(img, cnt)
+    bbox.append(c.bounding_box)
+    
+    
+#---------------------------
+import cv2
+import numpy as np
+
+#Create MSER object
+mser = cv2.MSER_create()
+
+#Your image path i-e receipt path
+img = cv2.imread('../Test Images/Wireless Drivers.png')
+
+#Convert to gray scale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+vis = img.copy()
+
+#detect regions in gray scale image
+regions, _ = mser.detectRegions(gray)
+
+hulls = [cv2.convexHull(p.reshape(-1, 1, 2)) for p in regions]
+
+cv2.polylines(vis, hulls, 1, (0, 255, 0))
+
+cv2.imshow('img', vis)
+
+cv2.waitKey(0)
+
+mask = np.zeros((img.shape[0], img.shape[1], 1), dtype=np.uint8)
+
+for contour in hulls:
+
+    cv2.drawContours(mask, [contour], -1, (255, 255, 255), -1)
+
+#this is used to find only text regions, remaining are ignored
+text_only = cv2.bitwise_and(img, img, mask=mask)
+
+cv2.imshow("text only", text_only)
+
+cv2.waitKey(0)
+ 
