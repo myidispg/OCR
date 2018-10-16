@@ -106,11 +106,16 @@ img = cv2.imread('../Test Images/Wireless Drivers.png',0)
 (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 contours = cv2.findContours(img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
 
+# Filetr contours with less than 5 points
+
+contoursList = [contour for contour in contours[1] if contour.shape[0] >= 5]
+    
 bbox = []
-for cnt in contours[1]:
+for cnt in contoursList:
     c = Contour(img, cnt)
     bbox.append(c.bounding_box)
     
+
     
 #---------------------------
 import cv2
@@ -120,10 +125,10 @@ import numpy as np
 mser = cv2.MSER_create()
 
 #Your image path i-e receipt path
-img = cv2.imread('../Test Images/Wireless Drivers.png')
-
+img = cv2.imread('../Test Images/book-cover-abstract-art.jpeg')
 #Convert to gray scale
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+thresh,gray = cv2.threshold(gray,127,255,0)
 
 vis = img.copy()
 
