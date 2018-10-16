@@ -109,14 +109,80 @@ contours = cv2.findContours(img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIM
 # Filetr contours with less than 5 points
 
 contoursList = [contour for contour in contours[1] if contour.shape[0] >= 5]
+# Remove contours that cannot be turned into ellipsis
+contours = list(contours)
+contours[1] = contoursList
+contours = tuple(contours)
     
 bbox = []
 for cnt in contoursList:
     c = Contour(img, cnt)
     bbox.append(c.bounding_box)
-    
+bbox = np.asarray(bbox)    
 
-    
+w = bbox[:, 2]
+h = bbox[:, 3]
+aspectRatio = np.divide(w,h)
+
+del w, h
+gc.collect()
+
+eccentricity = []
+for cnt in contoursList:
+    c = Contour(img, cnt)
+    eccentricity.append(c.eccentricity)
+eccentricity = np.asarray(eccentricity) 
+
+solidity = []
+for cnt in contoursList:
+    c = Contour(img, cnt)
+    solidity.append(c.solidity)
+solidity = np.asarray(solidity) 
+
+extent = []
+for cnt in contoursList:
+    c = Contour(img, cnt)
+    extent.append(c.extent)
+extent = np.asarray(extent) 
+
+del cnt
+gc.collect()
+
+filterIdx = []
+
+trueCount = 0
+for filters in filterIdx:
+    if filters == True:
+        trueCount += 1
+
+for prop in aspectRatio:
+    filterIdx.append(True if prop > 3 else False) # True count 12
+
+for i in range(len(filterIdx)):
+    if filterIdx[i] or eccentricity[i] > .995: # True count 12
+        filterIdx[i] = True
+        
+for i in range(len(filterIdx)):
+    if filterIdx[i] or solidity[i] < .3: # True count 151
+        filterIdx[i] = True
+
+for i in range(len(filterIdx)):
+    if filterIdx[i]:
+        if extent[i] > 0.9 or extent[i] < 0.2: # True count 151
+          filterIdx[i] = True  
+          
+del i, prop
+gc.collect()
+
+for i in range(len(filterIdx)):
+    if filterIdx[i] == False:
+        contoursList[i] = 0
+        
+for cnt in contoursList:
+    if cnt.all() == 0:
+        contoursList.remove(cnt)
+
+
 #---------------------------
 import cv2
 import numpy as np
