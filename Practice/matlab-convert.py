@@ -176,7 +176,9 @@ gc.collect()
 
 for i in range(len(filterIdx)):
     if filterIdx[i] == False:
-        contoursList[i] = 0
+        contoursList.pop(i)
+        filterIdx.pop(i)
+        i = 0
         
 for cnt in contoursList:
     if cnt.all() == 0:
