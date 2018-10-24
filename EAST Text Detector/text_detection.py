@@ -134,4 +134,8 @@ for (startX, startY, endX, endY) in boxes:
 cv2.imshow("Text Detection", orig)
 cv2.waitKey(0)
 
-word = image[rects[0][1]:rects[0][3], rects[0][0]:rects[0][2]]
+# Extract individual words from the image.
+words = []
+for i in range(len(rects)):
+    word = image[boxes[i][1]:boxes[i][3], boxes[i][0]:boxes[i][2]]
+    words.append(word)    
