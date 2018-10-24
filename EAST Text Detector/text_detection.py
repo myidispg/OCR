@@ -133,3 +133,5 @@ for (startX, startY, endX, endY) in boxes:
 # show the output image
 cv2.imshow("Text Detection", orig)
 cv2.waitKey(0)
+
+word = image[rects[0][1]:rects[0][3], rects[0][0]:rects[0][2]]
