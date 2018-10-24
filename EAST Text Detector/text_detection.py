@@ -132,18 +132,21 @@ for (startX, startY, endX, endY) in boxes:
 	cv2.rectangle(orig, (startX, startY), (endX, endY), (0, 255, 0), 2)
 
 # show the output image
-cv2.imshow("Text Detection", orig)
-cv2.waitKey(0)
+#cv2.imshow("Text Detection", orig)
+#cv2.waitKey(0)
+
+del w, blob, confidences, orig, H,W, angle, anglesData, args, cos, end, endX, endY, geometry, h, layerNames, newH, newW, numCols, numRows, offsetX, offsetY, rH, rW, scores, scoresData, sin, start, startX, startY, x, xData0, xData1, xData2, xData3, y
 
 # Extract individual words from the image.
 words = []
-for i in range(len(rects)):
+for i in range(len(boxes)):
     word = image[boxes[i][1]:boxes[i][3], boxes[i][0]:boxes[i][2]]
     words.append(word)    
+#---------------------------------------------------------------------------------
 # Preprocess a single word to get a grayscale image. 
-word = words[0]
-gray = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
-(thresh, gray) = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+word = words[1]
+gray = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)[1]
+gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 5))
 gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel)
 
