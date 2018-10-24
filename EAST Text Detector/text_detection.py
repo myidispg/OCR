@@ -2,6 +2,7 @@
 # python text_detection.py --image images/lebron_james.jpg --east frozen_east_text_detection.pb
 
 # import the necessary packages
+import imutils
 from imutils.object_detection import non_max_suppression
 import numpy as np
 import argparse
@@ -139,3 +140,24 @@ words = []
 for i in range(len(rects)):
     word = image[boxes[i][1]:boxes[i][3], boxes[i][0]:boxes[i][2]]
     words.append(word)    
+# Preprocess a single word to get a grayscale image. 
+word = words[0]
+gray = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
+(thresh, gray) = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 5))
+gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel)
+
+# Find individual characters using contour finding.
+cnts = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL,
+	cv2.CHAIN_APPROX_SIMPLE)
+cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+digitCnts = []
+
+# loop over the digit area candidates
+for c in cnts:
+	# compute the bounding box of the contour
+	(x, y, w, h) = cv2.boundingRect(c)
+ 
+	# if the contour is sufficiently large, it must be a digit
+	if w >= 15 and (h >= 30 and h <= 40):
+		digitCnts.append(c)
