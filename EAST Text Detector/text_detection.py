@@ -170,7 +170,7 @@ for c in cnts:
 		digitCnts.append(c)
 
 # Use cv2.findContours to get all the contours in a word
-word = words[1]
+word = words[0]
 cv2.imwrite('word.jpg', word)
 gray = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
 gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
