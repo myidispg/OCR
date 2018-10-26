@@ -26,7 +26,7 @@ args = vars(ap.parse_args())
 
 # load the input image and grab the image dimensions
 #image = cv2.imread(args["image"])
-image = cv2.imread('images/lebron_james.jpg')
+image = cv2.imread('images/book-cover-abstract-art.jpeg')
 orig = image.copy()
 (H, W) = image.shape[:2]
 
@@ -168,23 +168,28 @@ for c in cnts:
 	# if the contour is sufficiently large, it must be a digit
 	if w >= 15 and (h >= 30 and h <= 40):
 		digitCnts.append(c)
-
+#---------------------------------------------------------------------------------
 # Use cv2.findContours to get all the contours in a word
-word = words[0]
+word = words[1]
+word = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
+_, word = cv2.threshold(word, 127, 255, cv2.THRESH_BINARY)
+(W, H) = word.shape
+word = cv2.resize(word, (10*H, 10*W))
+del W, H
+gc.collect()
 cv2.imwrite('word.jpg', word)
-gray = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
-gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-#_,thresh = cv2.threshold(gray,127,255,0)
-_, contours, _ = cv2.findContours(gray,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
-# Draw the found contours on the original image
-cv2.drawContours(word, contours, -1, (0,255,0), 3)
-cv2.imshow("Characters", word)
+#gray = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
+#gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+##_,thresh = cv2.threshold(gray,127,255,0)
+#_, contours, _ = cv2.findContours(gray,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+#
+## Draw the found contours on the original image
+#cv2.drawContours(word, contours, -1, (0,255,0), 3)
+#cv2.imshow("Characters", word)
 
 # Try to isolate letters
 im = cv2.imread('word.jpg', 0)
-_, gray = cv2.threshold(im, 127, 255, cv2.THRESH_BINARY)
-_, contours, hierarchy = cv2.findContours(gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+_, contours, hierarchy = cv2.findContours(im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 for cnt in contours:
     x, y, w, h = cv2.boundingRect(cnt)
     cv2.rectangle(im, (x,y), (x+w, y+h), (0,255,0), 3)
@@ -193,5 +198,12 @@ i = 0
 for cnt in contours:
     x, y, w, h = cv2.boundingRect(cnt)
     if w > im.shape[0]/len(contours): # and h > 20:
-        cv2.imwrite(str(i) + ".jpg", gray[y:y+h, x:x+w])
+        cv2.imwrite(str(i) + ".jpg", im[y:y+h, x:x+w])
         i = i + 1
+    
+import pytesseract
+img = cv2.imread('word.jpg', 0)
+
+
+from PIL import Image
+print(pytesseract.image_to_string(img))
