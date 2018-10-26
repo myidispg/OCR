@@ -210,12 +210,14 @@ cv2.imwrite('new.jpg', process_word_to_mnist_format(words[0]))
 # load the model from disk
 from keras.models import load_model
 
-detection_model = load_model('text_detection_model-1.h5')
+detection_model = load_model('text_detection_model-2.h5')
 detection_model.summary()
 
+# Use this code to run sliding windows.
 new = cv2.imread('0.jpg', 0)
-alpha_1 = np.lib.pad(new[:, 15:35],(4,4),'constant')
-alpha = process_word_to_mnist_format(new[:, 18:38]) # row, column
+alpha = process_word_to_mnist_format(new[:, 38:58])/255 # row, column. make sure difference is 20
+alpha = np.array(alpha).reshape((1,28,28,1))
+detect = detection_model.predict(alpha)
 
 cv2.imwrite('alpha.jpg', alpha)
 
