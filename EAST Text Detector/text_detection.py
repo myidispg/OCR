@@ -146,6 +146,13 @@ for i in range(len(boxes)):
     
 del i
 gc.collect()
+
+#-------------------Use sliding windows to get letters----------------------------
+for i in range(len(words)):
+    cv2.imwrite(str(i) + ".jpg", words[i])
+
+
+
 #---------------------------------------------------------------------------------
 # Preprocess a single word to get a grayscale image. 
 word = words[1]
