@@ -37,7 +37,7 @@ gray = cv2.resize(255-gray, (28,28))
 # 128 is the threshhold value. Above it the value will be 255 and below will be 0. Controlles by THRESH_BINARY
 # cv2.THRESH_OTSU = 
 (thresh, gray) = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-
+# Remove empty rows and columns.
 while np.sum(gray[0]) == 0:
     gray = gray[1:]
 
@@ -52,6 +52,7 @@ while np.sum(gray[:,-1]) == 0:
     
 rows,cols = gray.shape
 
+# resize to 20 by 20.
 if rows > cols:
     factor = 20.0/rows
     rows = 20
@@ -65,6 +66,7 @@ else:
     # first cols than rows
     gray = cv2.resize(gray, (cols, rows))
     
+# Add a padding on all sides to turn into 28 * 28
 colsPadding = (int(math.ceil((28-cols)/2.0)),int(math.floor((28-cols)/2.0)))
 rowsPadding = (int(math.ceil((28-rows)/2.0)),int(math.floor((28-rows)/2.0)))
 gray = np.lib.pad(gray,(rowsPadding,colsPadding),'constant')

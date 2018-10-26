@@ -9,6 +9,8 @@ import argparse
 import time
 import cv2
 import gc
+import math
+from scipy import ndimage
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -151,7 +153,74 @@ gc.collect()
 for i in range(len(words)):
     cv2.imwrite(str(i) + ".jpg", words[i])
 
+del i
 
+word = words[0]
+word = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
+new_W = int(round(word.shape[1] / 20)) * 20
+w = int(word.shape[1] / 20) * 20
+# convert each word to grayscale and binarize amd convert height to 20 px.
+new_words = []
+i = 0
+for word in words:
+    word = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
+    word = cv2.threshold(word, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    new_H = 20
+    new_W = int(word.shape[1] / 20) * 20
+    word = cv2.resize(word, (new_W, new_H))
+    new_words.append(word)
+    cv2.imwrite(str(i) + ".jpg", word)
+    i+= 1
+
+words = new_words
+del new_words, new_H, new_W, i 
+gc.collect()
+
+# Turn the image into 28x28 pixels with the letter at center.
+def process_word_to_mnist_format(word):
+    rows, cols = 20, 20
+    # Add a padding on all sides to turn into 28 * 28
+    colsPadding = (int(math.ceil((28-cols)/2.0)),int(math.floor((28-cols)/2.0)))
+    rowsPadding = (int(math.ceil((28-rows)/2.0)),int(math.floor((28-rows)/2.0)))
+    word = np.lib.pad(word,(rowsPadding,colsPadding),'constant')
+
+    shiftx,shifty = getBestShift(word)
+    word = shift(word,shiftx,shifty)    
+    
+    return word
+    
+def getBestShift(img):
+    cy,cx = ndimage.measurements.center_of_mass(img)
+
+    rows,cols = img.shape
+    shiftx = np.round(cols/2.0-cx).astype(int)
+    shifty = np.round(rows/2.0-cy).astype(int)
+
+    return shiftx,shifty
+
+
+def shift(img,sx,sy):
+    rows,cols = img.shape
+    M = np.float32([[1,0,sx],[0,1,sy]])
+    shifted = cv2.warpAffine(img,M,(cols,rows))
+    return shifted   
+
+cv2.imwrite('new.jpg', process_word_to_mnist_format(words[0]))
+
+# load the model from disk
+from keras.models import load_model
+
+detection_model = load_model('text_detection_model-1.h5')
+detection_model.summary()
+
+new = cv2.imread('0.jpg', 0)
+alpha_1 = np.lib.pad(new[:, 15:35],(4,4),'constant')
+alpha = process_word_to_mnist_format(new[:, 18:38]) # row, column
+
+cv2.imwrite('alpha.jpg', alpha)
+
+def sliding_windows(word, stepSize=2):
+    
 
 #---------------------------------------------------------------------------------
 # Preprocess a single word to get a grayscale image. 
