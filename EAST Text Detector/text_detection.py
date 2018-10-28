@@ -155,11 +155,7 @@ for i in range(len(words)):
 
 del i
 
-word = words[0]
-word = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
-new_W = int(round(word.shape[1] / 20)) * 20
-w = int(word.shape[1] / 20) * 20
-# convert each word to grayscale and binarize amd convert height to 20 px.
+# convert each word to grayscale and binarize and convert height to 20 px.
 new_words = []
 i = 0
 for word in words:
@@ -205,8 +201,6 @@ def shift(img,sx,sy):
     shifted = cv2.warpAffine(img,M,(cols,rows))
     return shifted   
 
-cv2.imwrite('new.jpg', process_word_to_mnist_format(words[0]))
-
 # load the model from disk
 from keras.models import load_model
 
@@ -223,7 +217,49 @@ cv2.imwrite('alpha.jpg', alpha)
 
 def sliding_windows(word, stepSize=2):
     
+    alphabets = []
+    
+    for i in range(0, word.shape[1]-20, stepSize):
+        print(i)
+        alpha = process_word_to_mnist_format(word[:, i:i+20])/255
+        alpha = np.array(alpha).reshape((1,28,28,1))
+        detect = detection_model.predict(alpha)
+        if np.argmax(detect) == 1:
+            alphabets.append([i, 0, i+20, 20])
+    
+    return alphabets
 
+alphabets = sliding_windows(words[0])
+
+def non_max_suppression(boxes, overlapThresh):
+    # if there are no boxes, return an empty list.
+    if len(boxes) == 0:
+        return []
+    
+    # if the bounding boxes are integers, convert them to float.
+    # This is important for accuracy in divisions.
+    if boxes.dtype.kind == 'i'
+    boxes = boxes.astype('float')
+    
+    # initialize the list of picked boxes.
+    pick = []
+    
+    # grab the coordinates of bounding boxes.
+    x1 = boxes[:, 0]
+    y1 = boxes[:, 1]
+    x2 = boxes[:, 2]
+    y2 = boxes[:, 3]
+    
+    # compute the area of the bounding boxes and sort them by the bottom right coordinate.
+    area = (x2-x1+1) * (y2-y1+1)
+    idxs = np.argsort(y2)
+    
+    # keep looping while some indexes still remain in the list.
+    while len(idxs) > 0:
+        # grab the last index in the indexes list and add the index value to the list of picked indexs.
+        last = len(idxs) - 1
+        i = idxs[last]
+        pick.append(i)
 #---------------------------------------------------------------------------------
 # Preprocess a single word to get a grayscale image. 
 word = words[1]
