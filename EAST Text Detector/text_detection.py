@@ -35,7 +35,7 @@ orig = image.copy()
 # set the new width and height and then determine the ratio in change
 # for both the width and height
 #(newW, newH) = (args["width"], args["height"])
-(newW, newH) = (640, 640)
+(newW, newH) = (6400, 6400)
 rW = W / float(newW)
 rH = H / float(newH)
 
@@ -132,7 +132,7 @@ for (startX, startY, endX, endY) in boxes:
 	endY = int(endY * rH)
 
 	# draw the bounding box on the image
-	cv2.rectangle(orig, (startX, startY), (endX, endY), (0, 255, 0), 2)
+	cv2.rectangle(orig, (startX, startY), (endX, endY), (0, 255, 0), 2)                                    
 
 # show the output image
 #cv2.imshow("Text Detection", orig)
@@ -160,7 +160,7 @@ new_words = []
 i = 0
 for word in words:
     word = cv2.cvtColor(word, cv2.COLOR_BGR2GRAY)
-    word = cv2.threshold(word, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    word = cv2.threshold(word, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
     new_H = 20
     new_W = int(word.shape[1] / 20) * 20
     word = cv2.resize(word, (new_W, new_H))
@@ -208,8 +208,8 @@ detection_model = load_model('text_detection_model-2.h5')
 detection_model.summary()
 
 # Use this code to run sliding windows.
-new = cv2.imread('0.jpg', 0)
-alpha = process_word_to_mnist_format(new[:, 38:58])/255 # row, column. make sure difference is 20
+new = words[1]
+alpha = process_word_to_mnist_format(new[:, 298:318])/255 # row, column. make sure difference is 20
 alpha = np.array(alpha).reshape((1,28,28,1))
 detect = detection_model.predict(alpha)
 
@@ -218,28 +218,38 @@ cv2.imwrite('alpha.jpg', alpha)
 def sliding_windows(word, stepSize=2):
     
     alphabets = []
-    
+    scores = []
     for i in range(0, word.shape[1]-20, stepSize):
         print(i)
         alpha = process_word_to_mnist_format(word[:, i:i+20])/255
         alpha = np.array(alpha).reshape((1,28,28,1))
         detect = detection_model.predict(alpha)
+#        if detect[0][1] > 0.999:
+#            alphabets.append([i, 0, i+20, 20])
+        # for self non max   
         if np.argmax(detect) == 1:
             alphabets.append([i, 0, i+20, 20])
-    
-    return alphabets
+            scores.append(detect[0][1])
+#        # for internet non max
+#        if np.argmax(detect) == 1:
+#            alphabets.append([0, i, 20, i+20])
+#            scores.append(detect[0][1])
+            
+    return np.array(alphabets), np.array(scores)
 
-alphabets = sliding_windows(words[0])
+alphabets, scores = sliding_windows(words[0])
 
 def non_max_suppression(boxes, overlapThresh):
     # if there are no boxes, return an empty list.
     if len(boxes) == 0:
         return []
     
+    boxes = np.array(boxes)
+    
     # if the bounding boxes are integers, convert them to float.
     # This is important for accuracy in divisions.
-    if boxes.dtype.kind == 'i'
-    boxes = boxes.astype('float')
+    if boxes.dtype.kind == 'i':
+        boxes = boxes.astype('float')
     
     # initialize the list of picked boxes.
     pick = []
@@ -260,6 +270,71 @@ def non_max_suppression(boxes, overlapThresh):
         last = len(idxs) - 1
         i = idxs[last]
         pick.append(i)
+        
+        # find the largest (x,y) coordinates for the start of the bounding box and the smallest (x,y)
+        # coordinate for the end of the bounding box
+        xx1 = np.maximum(x1[i], x1[idxs[:last]])
+        yy1 = np.maximum(y1[i], y1[idxs[:last]])
+        xx2 = np.minimum(x2[i], x2[idxs[:last]])
+        yy2 = np.minimum(y2[i], y2[idxs[:last]])
+        
+        # compute the height and width of the bounding box
+        w = np.maximum(0, xx2 - xx1 + 1)
+        h = np.maximum(0, yy2 - yy1 + 1)
+        
+        # compute the ratio of the overlap
+        overlap = (w * h) / area[idxs[:last]]
+        
+        # delete all indexes from the list that have
+        idxs = np.delete(idxs, np.concatenate(([last], np.where(overlap > overlapThresh)[0])))
+        
+    # return only the boxes that were picked using the integer data type
+    return boxes[pick].astype('int')
+
+#---------------------------------------------------------------------------------
+def nms (boxes,overlap):
+    if not boxes:
+        pick = []
+	else:
+        trial = zeros((len(boxes),5),dtype=float64)
+        trial[:] = boxes[:]
+        x1 = trial[:,0]
+        y1 = trial[:,1]
+        x2 = trial[:,2]
+        y2 = trial[:,3]
+        score = trial[:,4]
+        area = (x2-x1+1)*(y2-y1+1)
+
+        I = argsort(score)
+        pick = []
+        count = 1
+        while (I.size!=0):
+			#print "Iteration:",count
+            last = I.size
+            i = I[last-1]
+            pick.append(i)
+            suppress = [last-1]
+            for pos in range(last-1):
+                j = I[pos]
+                xx1 = max(x1[i],x1[j])
+                yy1 = max(y1[i],y1[j])
+                xx2 = min(x2[i],x2[j])
+                yy2 = min(y2[i],y2[j])
+                w = xx2-xx1+1
+                h = yy2-yy1+1
+                if (w>0 and h>0):
+                    o = w*h/area[j]
+                    print ("Overlap is- " + str(o))
+                    if (o >overlap):
+                        suppress.append(pos)
+            I = delete(I,suppress)
+            count = count + 1
+    return pick
+#---------------------------------------------------------------------------------
+
+alphabets_keep = nms(alphabets, 0.4)
+
+cv2.imwrite('word.jpg', words[0][:,32:52])
 #---------------------------------------------------------------------------------
 # Preprocess a single word to get a grayscale image. 
 word = words[1]
