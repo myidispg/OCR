@@ -1,6 +1,7 @@
 from tkinter import *
 from PIL import Image, ImageDraw
 
+import time
 
 class PaintWindow():
 
@@ -27,7 +28,7 @@ class PaintWindow():
         self.text['yscrollcommand'] = self.scrollbar.set
 
         # --PIL---
-        self.image = Image.new('RGB', (500, 500), 'white')
+        self.image = Image.new('L', (500, 500), 'white')
         self.draw = ImageDraw.Draw(self.image)
 
         # A frame to hold the buttons
@@ -35,8 +36,8 @@ class PaintWindow():
         self.frame_btns.grid(row=1)
 
         # Buttons for some operations.
-        self.btn_save = Button(self.frame_btns, text='save', command=self.save)
-        self.btn_save.grid(row=0, column=0)
+        self.btn_space = Button(self.frame_btns, text='space', command=self.insert_space)
+        self.btn_space.grid(row=0, column=0)
 
         self.btn_full_stop = Button(self.frame_btns, text='.', command=self.insert_fullstop)
         self.btn_full_stop.grid(row=0, column=1)
@@ -60,17 +61,33 @@ class PaintWindow():
 
     def activate_paint(self, event):
         self.cv.bind('<B1-Motion>', self.paint)
+        self.cv.bind('<ButtonRelease-1>', self.motion_end)
         self.last_x, self.last_y = event.x, event.y
 
     def paint(self, event):
         x, y = event.x, event.y
         self.cv.create_line((self.last_x, self.last_y, x, y), width=4)
         # --PIL--
-        print('here')
         self.draw.line((self.last_x, self.last_y, x, y), fill='black', width=4)
         self.last_x, self.last_y = x, y
         # Update label text
         self.text.insert(INSERT, '-something')
+
+    # Function to execute when the motion event has ended.
+    def motion_end(self, event):
+        self.clear_canvas()
+
+    def clear_canvas(self):
+        time.sleep(0.5)
+        self.cv.delete('all')
+        self.save()
+        for x in range(500):
+            for y in range(500):
+                self.image.putpixel((x, y), (255))
+        self.save()
+
+    def insert_space(self):
+        self.text.insert(INSERT, ' ')
 
     def insert_fullstop(self):
         self.text.insert(INSERT, '. ')
