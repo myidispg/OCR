@@ -178,3 +178,18 @@ plt.xlabel('Epochs')
 
 # Save the model
 model.save('cnn-digits.h5')
+
+#--------Load the saved model and check how the input is working.---------
+from PIL import Image
+image = Image.open('GUI/image_0.png')
+image = image.resize((28, 28))
+image_arr = np.asarray(image)
+image_arr = np.subtract(255, image_arr)
+image = np.resize(image, (1, 28, 28, 1))
+
+from keras.models import load_model
+
+model = load_model('../cnn-digits.h5')
+
+predict = model.predict(image)
+
