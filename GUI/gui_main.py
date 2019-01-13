@@ -6,6 +6,11 @@ import numpy as np
 from keras.models import load_model
 
 import time
+import math
+from scipy import ndimage
+import cv2
+
+from .convert_mnist_format import ConvertMNSITFormat
 
 class PaintWindow():
     
@@ -63,6 +68,7 @@ class PaintWindow():
 
     def save(self):
         filename = 'image_{}.png'.format(self.image_number)
+        self.image = self.image.resize((28, 28), Image.ANTIALIAS)
         self.image.save(filename)
         self.image_number += 1
 

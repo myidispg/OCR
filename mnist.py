@@ -49,7 +49,7 @@ x_train = np.divide(x_train, 255)
 x_test = np.divide(x_test, 255)
 
 # Reshape the train images for CNN
-x_train = x_train.reshape(x_train.shape[0], 28, 28, 1, order="A")
+x_train = x_train.reshape(x_train.shape[0], 1, 28, 28, order="A")
 x_test = x_test.reshape(x_test.shape[0], 28, 28, 1, order="A")
 
 # labels should be onehot encoded
@@ -69,74 +69,9 @@ img = 255- img
 plt.imshow(img[0], cmap='gray')
 train_labels[samplenum][0]
 
-# -----Define the model-------------
-mean_px = x_train.mean().astype(np.float32)
-std_px = x_train.std().astype(np.float32)
+#----------------------------------------------------------------------------
 
-
-def norm_input(x): return (x-mean_px)/std_px
-
-# Batchnorm + dropout + data augmentation
-def create_model():
-    model = Sequential([
-        Lambda(norm_input, input_shape=(1,28,28), output_shape=(1,28,28)),
-        Conv2D(32, (3,3)),
-        LeakyReLU(),
-        BatchNormalization(axis=1),
-        Conv2D(32, (3,3)),
-        LeakyReLU(),
-        MaxPooling2D(),
-        BatchNormalization(axis=1),
-        Conv2D(64, (3,3)),
-        LeakyReLU(),
-        BatchNormalization(axis=1),
-        Conv2D(64, (3,3)),
-        LeakyReLU(),
-        MaxPooling2D(),
-        Flatten(),
-        BatchNormalization(),
-        Dense(512),
-        LeakyReLU(),
-        BatchNormalization(),
-        Dropout(0.2),
-        Dense(10, activation='softmax')
-    ])
-    model.compile(Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
-    return model
-
-# Data Augmentation
-    
-batch_size = 512
-
-gen = ImageDataGenerator(rotation_range=12, width_shift_range=0.1, shear_range=0.3,
-                         height_shift_range=0.1, zoom_range=0.1, data_format='channels_first')
-batches = gen.flow(x_train, y_train, batch_size=batch_size)
-test_batches = gen.flow(x_test, y_test, batch_size=batch_size)
-steps_per_epoch = int(np.ceil(batches.n/batch_size))
-validation_steps = int(np.ceil(test_batches.n/batch_size))
-
-# load ONE image from training set to display on screen
-img = x_train[1]
-img = 255-img
-
-# trick our generator into believing img has enough dimensions
-# and get some augmented images for our single test image
-img = np.expand_dims(img, axis=0)
-aug_iter = gen.flow(img)
-
-# visualize original image
-plt.imshow(img[0], cmap='gray')
-
-# ---- Ensembling-----
-
-# Create TEN models from scratch
-models = []
-weights_epoch = 0
-
-for i in range(10):
-    m = create_model()
-    models.append(m)
-    
+# --------Define and train the model-----------------------------------------    
 
 def create_model():
     model = Sequential()
@@ -179,17 +114,95 @@ plt.xlabel('Epochs')
 # Save the model
 model.save('cnn-digits.h5')
 
+
+# --------Preprocess the image to look more like MNIST---------------------
+import math
+from scipy import ndimage
+import cv2
+
+def getBestShift(img):
+    cy,cx = ndimage.measurements.center_of_mass(img)
+
+    rows,cols = img.shape
+    shiftx = np.round(cols/2.0-cx).astype(int)
+    shifty = np.round(rows/2.0-cy).astype(int)
+
+    return shiftx,shifty
+
+
+def shift(img,sx,sy):
+    rows,cols = img.shape
+    M = np.float32([[1,0,sx],[0,1,sy]])
+    shifted = cv2.warpAffine(img,M,(cols,rows))
+    return shifted
+
+# read the image
+gray = cv2.imread('GUI/image_0.png', 0) # 0 is for grayscale read. # 1 for color image without any transparency. -1 for image without any changes
+gray = 255 - gray
+
+# better black and white version
+# 128 is the threshhold value. Above it the value will be 255 and below will be 0. Controlles by THRESH_BINARY
+# cv2.THRESH_OTSU = 
+(thresh, gray) = cv2.threshold(gray, 5, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+# Remove empty rows and columns.
+while np.sum(gray[0]) == 0:
+    gray = gray[1:]
+
+while np.sum(gray[:,0]) == 0:
+    gray = np.delete(gray,0,1)
+
+while np.sum(gray[-1]) == 0:
+    gray = gray[:-1]
+
+while np.sum(gray[:,-1]) == 0:
+    gray = np.delete(gray,-1,1)
+    
+rows,cols = gray.shape
+
+# resize to 20 by 20.
+if rows > cols:
+    factor = 20.0/rows
+    rows = 20
+    cols = int(round(cols*factor))
+    # first cols than rows
+    gray = cv2.resize(gray, (cols,rows))
+else:
+    factor = 20.0/cols
+    cols = 20
+    rows = int(round(rows*factor))
+    # first cols than rows
+    gray = cv2.resize(gray, (cols, rows))
+    
+# Add a padding on all sides to turn into 28 * 28
+colsPadding = (int(math.ceil((28-cols)/2.0)),int(math.floor((28-cols)/2.0)))
+rowsPadding = (int(math.ceil((28-rows)/2.0)),int(math.floor((28-rows)/2.0)))
+gray = np.lib.pad(gray,(rowsPadding,colsPadding),'constant')
+
+shiftx,shifty = getBestShift(gray)
+shifted = shift(gray,shiftx,shifty)
+gray = shifted
+
+cv2.imshow('gray', gray)
+cv2.waitKey()
+cv2.destroyAllWindows()
+
 #--------Load the saved model and check how the input is working.---------
 from PIL import Image
+from convert_mnist_format import ConvertMNISTFormat
+
 image = Image.open('GUI/image_0.png')
 image = image.resize((28, 28))
-image_arr = np.asarray(image)
-image_arr = np.subtract(255, image_arr)
+image = np.asarray(image)
+preprocess = ConvertMNISTFormat(image)
+image = preprocess.process_image()
+
 image = np.resize(image, (1, 28, 28, 1))
+image = np.divide(image, 255)
 
 from keras.models import load_model
 
-model = load_model('../cnn-digits.h5')
+model = load_model('cnn-digits.h5')
 
-predict = model.predict(image)
+predict = np.argmax(model.predict(image))
 
