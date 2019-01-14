@@ -190,34 +190,51 @@ cv2.destroyAllWindows()
 #--------Load the saved model and check how the input is working.---------
 from PIL import Image
 from convert_mnist_format import ConvertMNISTFormat
+import numpy as np
 
-image = Image.open('GUI/image_0.png')
+image = Image.open('image_0.png')
 image = image.resize((28, 28))
 image = np.asarray(image)
 preprocess = ConvertMNISTFormat(image)
 image = preprocess.process_image()
 image = np.divide(image, 255)
-image = np.resize(image, (1, 28, 28, 1))
 
-def to_binary(image, lower, higher):
-    for x in range(image.shape[0]):
-        for y in range(image.shape[1]):
-            if image[x][y] > 0:
-                image[x][y] = 1
-            else:
-                image[x][y] = 0
-                
-    return image
+# specify a threshold 0-1
+threshold = 0.0
 
-binary_image = to_binary(image, 0, 1)
+# make all pixels < threshold black
+binarized = 1.0 * (image > threshold)
+
+#binary_image = to_binary(image, 0, 1)
+
+
+import cv2
+cv2.imshow('image', binarized)
+cv2.waitKey()
+cv2.destroyAllWindows()
 
 # Skeletonize(Thining) the image
+
 from skimage.morphology import skeletonize
-skeleton = skeletonize(binary_image).astype(np.int8)
+skeleton = skeletonize(binarized).astype(np.int8)
+
+
+import cv2
+cv2.imshow('image', skeleton*255)
+cv2.waitKey()
+cv2.destroyAllWindows()
+cv2.imwrite('some.png', skeleton*255)
+# Segment the image
+
+
+from character_segment import SegmentCharacters
+
+char_segment = SegmentCharacters(skeleton)
+seg_img = char_segment.segment()
 
 from keras.models import load_model
 
 model = load_model('cnn-digits.h5')
-
-predict = np.argmax(model.predict(image))
+skeleton = np.resize(skeleton, (1, 28, 28, 1))
+predict = np.argmax(model.predict(skeleton))
 

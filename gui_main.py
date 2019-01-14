@@ -10,7 +10,7 @@ import math
 from scipy import ndimage
 import cv2
 
-from .convert_mnist_format import ConvertMNSITFormat
+from convert_mnist_format import ConvertMNISTFormat
 
 class PaintWindow():
     
@@ -88,7 +88,7 @@ class PaintWindow():
 
     # Function to execute when the motion event has ended.
     def motion_end(self, event):
-        self.predict_char(self.image)
+#        self.predict_char(self.image)
         self.text.insert(INSERT, '-something')
         self.clear_canvas()
 
@@ -96,19 +96,21 @@ class PaintWindow():
         time.sleep(0.5)
         self.cv.delete('all')
         self.save()
-        for x in range(500):
-            for y in range(500):
+        print(self.image.size)
+        for x in range(self.image.size[0]):
+            for y in range(self.image.size[1]):
                 self.image.putpixel((x, y), (255))
-        self.save()
+#        self.save()
         
     def predict_char(self, image):
-        image.show()
         image = image.resize((28, 28))
         image_arr = np.asarray(image)
+        preprocess = ConvertMNISTFormat(image)
+        image_arr = preprocess.process_image()
+        image_arr = np.divide(image_arr, 255)
         image_arr = np.resize(image_arr, (1, 28, 28, 1))
         predict = self.model.predict(image_arr)
-        print(predict)
-        print(np.amax(predict[0]))
+        print(np.argmax(predict[0]))
 #        return predict_classes[predict]
 
     def insert_space(self):
@@ -133,7 +135,7 @@ class PaintWindow():
 root = Tk()
 
 # Load the saved pre-trained model
-model = load_model('../cnn-digits.h5')
+model = load_model('cnn-digits.h5')
 
 
 cv = PaintWindow(root, model)

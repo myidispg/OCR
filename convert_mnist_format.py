@@ -17,7 +17,7 @@ class ConvertMNISTFormat():
         self.image = image
     
     def process_image(self):
-        self.image = 255 - self.image
+        self.image = np.subtract(255, self.image)
         # better black and white version
         # 128 is the threshhold value. Above it the value will be 255 and below will be 0. Controlles by THRESH_BINARY
         # cv2.THRESH_OTSU = 
