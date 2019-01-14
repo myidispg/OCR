@@ -196,9 +196,24 @@ image = image.resize((28, 28))
 image = np.asarray(image)
 preprocess = ConvertMNISTFormat(image)
 image = preprocess.process_image()
-
-image = np.resize(image, (1, 28, 28, 1))
 image = np.divide(image, 255)
+image = np.resize(image, (1, 28, 28, 1))
+
+def to_binary(image, lower, higher):
+    for x in range(image.shape[0]):
+        for y in range(image.shape[1]):
+            if image[x][y] > 0:
+                image[x][y] = 1
+            else:
+                image[x][y] = 0
+                
+    return image
+
+binary_image = to_binary(image, 0, 1)
+
+# Skeletonize(Thining) the image
+from skimage.morphology import skeletonize
+skeleton = skeletonize(binary_image).astype(np.int8)
 
 from keras.models import load_model
 
