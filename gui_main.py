@@ -68,7 +68,7 @@ class PaintWindow():
 
     def save(self):
         filename = 'image_{}.png'.format(self.image_number)
-        self.image = self.image.resize((28, 28), Image.ANTIALIAS)
+#        self.image = self.image.resize((28, 28), Image.ANTIALIAS)
         self.image.save(filename)
         self.image_number += 1
 
@@ -79,9 +79,9 @@ class PaintWindow():
 
     def paint(self, event):
         x, y = event.x, event.y
-        self.cv.create_line((self.last_x, self.last_y, x, y), width=4)
+        self.cv.create_line((self.last_x, self.last_y, x, y), width=3)
         # --PIL--
-        self.draw.line((self.last_x, self.last_y, x, y), fill='black', width=4)
+        self.draw.line((self.last_x, self.last_y, x, y), fill='black', width=3)
         self.last_x, self.last_y = x, y
         # Update label text
 #        self.text.insert(INSERT, '-something')

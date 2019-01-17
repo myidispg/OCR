@@ -191,50 +191,76 @@ cv2.destroyAllWindows()
 from PIL import Image
 from convert_mnist_format import ConvertMNISTFormat
 import numpy as np
+import cv2
 
 image = Image.open('image_0.png')
-image = image.resize((28, 28))
+#image = image.resize((28, 28))
 image = np.asarray(image)
 preprocess = ConvertMNISTFormat(image)
-image = preprocess.process_image()
+#image = preprocess.process_image()
 image = np.divide(image, 255)
+# Invert the colors so that white lines on black background.
+image = (1-image)
 
-# specify a threshold 0-1
-threshold = 0.0
+# The obtained image is already binarized so no binarization is required.
+#
+## Binarization
+## specify a threshold 0-1
+#threshold = 0.0
+## make all pixels < threshold black
+#binarized = 1.0 * (image > threshold)
 
-# make all pixels < threshold black
-binarized = 1.0 * (image > threshold)
 
-#binary_image = to_binary(image, 0, 1)
-
-
-import cv2
-cv2.imshow('image', binarized)
+cv2.imshow('image', image)
 cv2.waitKey()
 cv2.destroyAllWindows()
 
 # Skeletonize(Thining) the image
 
 from skimage.morphology import skeletonize
-skeleton = skeletonize(binarized).astype(np.int8)
+image = skeletonize(image).astype(np.float64)
 
+# Save the skeleton image for checking if everything is okay.
+cv2.imwrite('skeleton.png', image*255)
 
-import cv2
-cv2.imshow('image', skeleton*255)
+# Segment the image
+def segment(image):
+    width, height = image.shape
+    print('width- {}, height- {}'.format(width, height))
+    # Find the sum of pixels in all columns
+    col_sum = np.sum(image, axis=0)
+    # Find the first column with a pixel
+    first_pix_col = None
+    for x in range(len(col_sum)):
+        if col_sum[x] != 0:
+            first_pix_col = x
+            break
+    # Find columns with sum either 0 or 1
+    psc = []
+    for x in range(first_pix_col, len(col_sum)):
+        if col_sum[x] == 0 or col_sum[x] == 1:
+            psc.append(x)
+    return psc, col_sum
+
+    
+psc, col_sum = segment(image)
+# Draw a line over all psc
+copy = image
+for col in psc:
+    cv2.line(copy, (col, 0), (col, copy.shape[1]), (255, 255, 255), 3)
+    
+cv2.imshow('image', copy)
 cv2.waitKey()
 cv2.destroyAllWindows()
-cv2.imwrite('some.png', skeleton*255)
-# Segment the image
-
 
 from character_segment import SegmentCharacters
 
-char_segment = SegmentCharacters(skeleton)
+char_segment = SegmentCharacters(image)
 seg_img = char_segment.segment()
 
 from keras.models import load_model
 
 model = load_model('cnn-digits.h5')
-skeleton = np.resize(skeleton, (1, 28, 28, 1))
+image = np.resize(image, (1, 28, 28, 1))
 predict = np.argmax(model.predict(skeleton))
 
