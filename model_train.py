@@ -43,22 +43,32 @@ def batch_generator(image_paths, batch_size, isTraining):
         type_dir = 'train' if isTraining else 'test'
         
         for i in range(len(image_paths)):
-            print(i)
-            print(os.path.join(data_dir_base, type_dir, image_paths[i]))
+#            print(i)
+#            print(os.path.join(data_dir_base, type_dir, image_paths[i]))
             img = cv2.imread(os.path.join(data_dir_base, type_dir, image_paths[i]), 0)
             img  = np.divide(img, 255)
             img = img.reshape(28, 28, 1)
             batch_imgs.append(img)
             label = image_paths[i].split('_')[1].split('.')[0]
             batch_labels.append(label)
+            category_labels = keras.utils.to_categorical(batch_labels, 62)
             if len(batch_imgs) == batch_size:
-                yield (np.asarray(batch_imgs), np.asarray(batch_labels))
+                yield (np.asarray(batch_imgs), np.asarray(category_labels))
                 batch_imgs = []
+                batch_labels = []
         if batch_imgs:
             yield batch_imgs
         
-index = next(batch_generator(train_dataset, 10, True))
+gen = batch_generator(test_dataset, 10000, False)
 
+#count = 0
+#list_one = []
+#list_two = []
+#for batch in gen:
+#    list_one.append(batch[0])
+#    list_two.append(batch[1])
+#    count += 1
+#    print(count)
 # --------Define and train the model-----------------------------------------    
 
 def create_model():
@@ -83,7 +93,7 @@ def create_model():
     model.add(Dense(128, activation='relu'))
     model.add(BatchNormalization())
     model.add(Dropout(0.4))
-    model.add(Dense(10, activation='softmax'))
+    model.add(Dense(62, activation='softmax'))
     
     model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
     
@@ -91,7 +101,16 @@ def create_model():
     
 model = create_model()
 print(model.summary())
-history = model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test), batch_size=512, verbose=1, shuffle=1)
+
+history = model.fit_generator(batch_generator(train_dataset, 512, True),
+                              epochs=3,
+                              steps_per_epoch = 1363,
+                              validation_data=batch_generator(test_dataset, 512, False),
+                              validation_steps = 227,
+                              verbose=1,
+                              shuffle=1)
+
+import matplotlib.pyplot as plt
 
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
