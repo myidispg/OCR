@@ -37,11 +37,12 @@ base_dir = '../MNIST_Dataset/images_by_classes/'
 import cv2
 
 test_dir = 'test/'
+
 # Loop over the test dataset and save each image.
 for x in range(len(x_test)):
-    print('Working on image {}'.format(x+1))
+    print('Working on test image {}'.format(x+1))
     image = x_test[x].reshape(28,28)
-    label = str(y_train[x][0])
+    label = str(y_test[x][0])
     counter = x + 1
     filename = '{}_{}.png'.format(counter, label)
     # Check if the dir exists
@@ -50,9 +51,24 @@ for x in range(len(x_test)):
     # Create the full image path
     path = os.path.join(base_dir, test_dir, filename)
     cv2.imwrite(path, image)
+
+del x_test, y_test, test_dir
+gc.collect()
+
+train_dir = 'train/'
+# Loop over the test dataset and save each image.
+for x in range(len(x_train)):
+    print('Working on train image {}'.format(x+1))
+    image = x_train[x].reshape(28,28)
+    label = str(y_train[x][0])
+    counter = x + 1
+    filename = '{}_{}.png'.format(counter, label)
+    # Check if the dir exists
+    if not os.path.isdir(os.path.join(base_dir, train_dir)):
+        os.makedirs(os.path.join(base_dir, train_dir))
+    # Create the full image path
+    path = os.path.join(base_dir, train_dir, filename)
+    cv2.imwrite(path, image)
     
-image = x_train[0].reshape(28, 28)
-cv2.imshow('image', image)
-cv2.waitKey()
-cv2.destroyAllWindows()
-cv2.imwrite('image.png', image)
+del base_dir, counter, filename, image, label, path, train_dir, x, x_train, y_train
+gc.collect()
