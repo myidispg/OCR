@@ -244,9 +244,18 @@ def segment(image):
 
     
 psc, col_sum = segment(image)
+
+# Solve over-segmentation(Prevelant in open loop chars like W, U, M etc.)
+threshold = 9
+segments = []
+
+for x in range(1, len(psc)):
+    if (psc[x] - psc[x-1]) > threshold:
+        segments.append(psc[x])
+
 # Draw a line over all psc
-copy = image
-for col in psc:
+copy = image.copy()
+for col in segments:
     cv2.line(copy, (col, 0), (col, copy.shape[1]), (255, 255, 255), 3)
     
 cv2.imshow('image', copy)
