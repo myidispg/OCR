@@ -51,7 +51,7 @@ def batch_generator(image_paths, batch_size, isTraining):
             batch_imgs.append(img)
             label = image_paths[i].split('_')[1].split('.')[0]
             batch_labels.append(label)
-            category_labels = keras.utils.to_categorical(batch_labels, 62)
+            category_labels = keras.utils.to_categorical(batch_labels, 62).shape
             if len(batch_imgs) == batch_size:
                 yield (np.asarray(batch_imgs), np.asarray(category_labels))
                 batch_imgs = []
@@ -59,16 +59,8 @@ def batch_generator(image_paths, batch_size, isTraining):
         if batch_imgs:
             yield batch_imgs
         
-gen = batch_generator(test_dataset, 10000, False)
+gen = batch_generator(test_dataset, 10, False)
 
-#count = 0
-#list_one = []
-#list_two = []
-#for batch in gen:
-#    list_one.append(batch[0])
-#    list_two.append(batch[1])
-#    count += 1
-#    print(count)
 # --------Define and train the model-----------------------------------------    
 
 def create_model():
@@ -103,12 +95,14 @@ model = create_model()
 print(model.summary())
 
 history = model.fit_generator(batch_generator(train_dataset, 512, True),
-                              epochs=3,
+                              epochs=5,
                               steps_per_epoch = 1363,
                               validation_data=batch_generator(test_dataset, 512, False),
                               validation_steps = 227,
                               verbose=1,
                               shuffle=1)
+
+model.save('cnn-by-class.h5')
 
 import matplotlib.pyplot as plt
 
@@ -117,3 +111,49 @@ plt.plot(history.history['val_loss'])
 plt.legend(['training', 'validation'])
 plt.title('Loss')
 plt.xlabel('Epochs')
+
+# For checking the categories
+from PIL import Image
+from convert_mnist_format import ConvertMNISTFormat
+import numpy as np
+import cv2
+
+image = Image.open('image_7.png')
+image = image.resize((28, 28), Image.ANTIALIAS)
+image = np.asarray(image)
+preprocess = ConvertMNISTFormat(image)
+image = preprocess.process_image()
+image = np.divide(image, 255)
+
+cv2.imshow('image', image)
+cv2.waitKey()
+cv2.destroyAllWindows()
+
+from keras.models import load_model
+
+model = load_model('cnn-by-class.h5')
+image = np.resize(image, (1, 28, 28, 1))
+predict = np.argmax(model.predict(image))
+
+for data in test_dataset:
+    label = data.split('_')[1].split('.')[0]
+    if label == str(36):
+        print(data)
+
+import cv2
+image = cv2.imread(os.path.join(data_dir_base, test_dir, '110274_36.png'), 0)
+cv2.imshow('image', image)
+cv2.waitKey()
+cv2.destroyAllWindows()
+
+labels_completed = []
+
+for data in train_dataset:
+    label = data.split('_')[1].split('.')[0]
+    if label not in labels_completed:
+        print(label)
+        labels_completed.append(label)
+        image = cv2.imread(os.path.join(data_dir_base, test_dir, data), 0)
+        cv2.imshow('image', image)
+        cv2.waitKey()
+        cv2.destroyAllWindows()

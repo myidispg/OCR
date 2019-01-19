@@ -121,11 +121,11 @@ from convert_mnist_format import ConvertMNISTFormat
 import numpy as np
 import cv2
 
-image = Image.open('image_0.png')
-#image = image.resize((28, 28))
+image = Image.open('image_3.png')
+image = image.resize((28, 28), Image.ANTIALIAS)
 image = np.asarray(image)
 preprocess = ConvertMNISTFormat(image)
-#image = preprocess.process_image()
+image = preprocess.process_image()
 image = np.divide(image, 255)
 # Invert the colors so that white lines on black background.
 image = (1-image)
@@ -197,7 +197,15 @@ seg_img = char_segment.segment()
 
 from keras.models import load_model
 
-model = load_model('cnn-digits.h5')
-image = np.resize(image, (1, 28, 28, 1))
-predict = np.argmax(model.predict(skeleton))
+labels = [0,1,2,3,4,5,6,7,8,9,
+          'A','B','C','D','E','F','G','H','I', 'J', 'K','L','M','N','O','P',
+          'Q','R','S','T','U','V','W','X','Y','Z', 'a','b','c','d','e','f',
+          'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
+          'w','x','y','z']
 
+model = load_model('cnn-by-class.h5')
+image = np.resize(image, (1, 28, 28, 1))
+predict = np.argmax(model.predict(image))
+print('The image has - {}'.format(labels[predict]))
+
+# Test the 

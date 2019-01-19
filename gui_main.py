@@ -18,7 +18,7 @@ class PaintWindow():
 
     def __init__(self, master, model):
         self.last_x, self.last_y = None, None
-        self.image_number = 0
+        self.image_number = 5
         self.model = model
 
         # Canvas to draw upon
