@@ -11,6 +11,7 @@ import keras
 import os
 import gc
 import cv2
+import pandas as pd
 
 from random import shuffle
 
@@ -33,8 +34,41 @@ test_dataset = os.listdir(os.path.join(data_dir_base, test_dir))
 shuffle(train_dataset)
 shuffle(test_dataset)
 
-# Define a batch generator
+# Get some basic dimensions of the image
+(h, w) = (28, 28)
+center = (w/2, h/2)
 
+# To ratate the image, we need imutils
+import imutils
+scale = 1.0
+rotation_mat = cv2.getRotationMatrix2D(center, 180, scale)
+
+
+# Create a list of labels with corresponding image names.
+label_dict = {}
+
+labels = []
+for i in range(62):
+    labels.append(i)
+    
+for label in labels:
+    label_dict[label] = []
+
+for data in test_dataset:
+    label = int(data.split('_')[1].split('.')[0])
+    label_dict[label].append(data)
+
+# Visualize 5 images of each category
+for i in range(15):
+    img = cv2.imread(os.path.join(data_dir_base, test_dir, label_dict[34][i]), 0)
+#    img = cv2.warpAffine(img, rotation_mat, (h, w))
+    img = imutils.rotate(img, 270)
+    img = cv2.flip(img, 1)
+    cv2.imshow('image', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+# Define a batch generator
 def batch_generator(image_paths, batch_size, isTraining):
     while True:
         batch_imgs = []
@@ -46,12 +80,15 @@ def batch_generator(image_paths, batch_size, isTraining):
 #            print(i)
 #            print(os.path.join(data_dir_base, type_dir, image_paths[i]))
             img = cv2.imread(os.path.join(data_dir_base, type_dir, image_paths[i]), 0)
+            img = imutils.rotate(img, 270)
+    img = cv2.flip(img, 1)
             img  = np.divide(img, 255)
             img = img.reshape(28, 28, 1)
             batch_imgs.append(img)
             label = image_paths[i].split('_')[1].split('.')[0]
             batch_labels.append(label)
-            category_labels = keras.utils.to_categorical(batch_labels, 62).shape
+            category_labels = keras.utils.to_categorical(batch_labels, 62)
+            print(category_labels)
             if len(batch_imgs) == batch_size:
                 yield (np.asarray(batch_imgs), np.asarray(category_labels))
                 batch_imgs = []
@@ -59,7 +96,8 @@ def batch_generator(image_paths, batch_size, isTraining):
         if batch_imgs:
             yield batch_imgs
         
-gen = batch_generator(test_dataset, 10, False)
+gen = next(batch_generator(test_dataset, 10, False))
+
 
 # --------Define and train the model-----------------------------------------    
 

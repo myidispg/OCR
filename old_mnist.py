@@ -131,9 +131,9 @@ image = np.divide(image, 255)
 image = (1-image)
 
 
-# Skeletonize(Thining) the image
-from skimage.morphology import skeletonize
-image = skeletonize(image).astype(np.float64)
+# Skeletonize(Thining) the image(Not required for individual characters.)
+#from skimage.morphology import skeletonize
+#image = skeletonize(image).astype(np.float64)
 
 # Segment the image
 from character_segment import SegmentCharacters

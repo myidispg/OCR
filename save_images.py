@@ -36,8 +36,21 @@ base_dir = '../MNIST_Dataset/images_by_classes/'
 
 import cv2
 
-test_dir = 'test/'
+label_dict = {}
 
+labels = []
+for i in range(62):
+    labels.append(i)
+    
+for label in labels:
+    label_dict[label] = []
+
+for x in range(len(y_test)):
+    label = y_test[x][0]
+    label_dict[label].append(x)
+
+test_dir = 'test/'
+counter = 0
 # Loop over the test dataset and save each image.
 for x in range(len(x_test)):
     print('Working on test image {}'.format(x+1))
@@ -56,6 +69,7 @@ del x_test, y_test, test_dir
 gc.collect()
 
 train_dir = 'train/'
+counter = 1
 # Loop over the test dataset and save each image.
 for x in range(len(x_train)):
     print('Working on train image {}'.format(x+1))
@@ -72,3 +86,9 @@ for x in range(len(x_train)):
     
 del base_dir, counter, filename, image, label, path, train_dir, x, x_train, y_train
 gc.collect()
+
+import cv2
+img = x_train[100].reshape(28,28)
+cv2.imwrite('imagesss.png', img)
+cv2.waitKey()
+cv2.destroyAllWindows()
