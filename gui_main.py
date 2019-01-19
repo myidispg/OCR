@@ -65,6 +65,9 @@ class PaintWindow():
 
         self.btn_exclamation = Button(self.frame_btns, text='!', command=self.insert_exclamation)
         self.btn_exclamation.grid(row=0, column=5)
+        
+        self.btn_clear = Button(self.frame_btns, text='Clear canvas', command=self.clear_canvas)
+        self.btn_clear.grid(row=0, column=6)
 
     def save(self):
         filename = 'image_{}.png'.format(self.image_number)
@@ -90,10 +93,9 @@ class PaintWindow():
     def motion_end(self, event):
 #        self.predict_char(self.image)
         self.text.insert(INSERT, '-something')
-        self.clear_canvas()
+#        self.clear_canvas(event, event.x, event.y)
 
     def clear_canvas(self):
-        time.sleep(0.5)
         self.cv.delete('all')
         self.save()
         print(self.image.size)

@@ -121,13 +121,13 @@ from convert_mnist_format import ConvertMNISTFormat
 import numpy as np
 import cv2
 
-image = Image.open('image_3.png')
-image = image.resize((28, 28), Image.ANTIALIAS)
+image = Image.open('image_5.png')
+#image = image.resize((28, 28), Image.ANTIALIAS)
 image = np.asarray(image)
-preprocess = ConvertMNISTFormat(image)
-image = preprocess.process_image()
+#preprocess = ConvertMNISTFormat(image)
+#image = preprocess.process_image()
 image = np.divide(image, 255)
-# Invert the colors so that white lines on black background.
+# Invert the colors so that white lines on black background. Required only when not converted to MNIST format.
 image = (1-image)
 
 # The obtained image is already binarized so no binarization is required.
@@ -166,29 +166,45 @@ def segment(image):
     # Find columns with sum either 0 or 1
     psc = []
     for x in range(first_pix_col, len(col_sum)):
-        if col_sum[x] == 0 or col_sum[x] == 1:
+        if col_sum[x] == 0:# or col_sum[x] == 1:
             psc.append(x)
     return psc, col_sum
 
     
 psc, col_sum = segment(image)
 
-# Solve over-segmentation(Prevelant in open loop chars like W, U, M etc.)
-threshold = 9
-segments = []
-
+## Solve over-segmentation(Prevelant in open loop chars like W, U, M etc.)
+#threshold = 9
+#segments = []
+#
+#for x in range(1, len(psc)):
+#    if (psc[x] - psc[x-1]) == 1:
+#        segments.append(psc[x])
+        
+# Get the x-coordinates to crop the image-
+coords = [0, psc[0] + 8]
+single_segment = False
 for x in range(1, len(psc)):
-    if (psc[x] - psc[x-1]) > threshold:
-        segments.append(psc[x])
+    if psc[x] - psc[x-1] == 1:
+        pass
+    else:
+        coords.append(psc[x] + 8)
+        
+    
 
 # Draw a line over all psc
 copy = image.copy()
-for col in segments:
+for col in coords:
     cv2.line(copy, (col, 0), (col, copy.shape[1]), (255, 255, 255), 3)
     
 cv2.imshow('image', copy)
 cv2.waitKey()
 cv2.destroyAllWindows()
+
+# FInd connected components of segmented characters
+from autocorrect import spell
+
+spell('sum')
 
 from character_segment import SegmentCharacters
 
