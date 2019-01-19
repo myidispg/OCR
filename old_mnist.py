@@ -130,87 +130,38 @@ image = np.divide(image, 255)
 # Invert the colors so that white lines on black background. Required only when not converted to MNIST format.
 image = (1-image)
 
-# The obtained image is already binarized so no binarization is required.
-#
-## Binarization
-## specify a threshold 0-1
-#threshold = 0.0
-## make all pixels < threshold black
-#binarized = 1.0 * (image > threshold)
-
-
-cv2.imshow('image', image)
-cv2.waitKey()
-cv2.destroyAllWindows()
 
 # Skeletonize(Thining) the image
-
 from skimage.morphology import skeletonize
 image = skeletonize(image).astype(np.float64)
 
-# Save the skeleton image for checking if everything is okay.
-cv2.imwrite('skeleton.png', image*255)
-
 # Segment the image
-def segment(image):
-    width, height = image.shape
-    print('width- {}, height- {}'.format(width, height))
-    # Find the sum of pixels in all columns
-    col_sum = np.sum(image, axis=0)
-    # Find the first column with a pixel
-    first_pix_col = None
-    for x in range(len(col_sum)):
-        if col_sum[x] != 0:
-            first_pix_col = x
-            break
-    # Find columns with sum either 0 or 1
-    psc = []
-    for x in range(first_pix_col, len(col_sum)):
-        if col_sum[x] == 0:# or col_sum[x] == 1:
-            psc.append(x)
-    return psc, col_sum
+from character_segment import SegmentCharacters
 
-    
-psc, col_sum = segment(image)
+char_segment = SegmentCharacters(image)
+coords = char_segment.find_char_images()
 
+sep_images = []
+current_index = 0
+for coord in coords:
+    if coord == 0:
+        pass
+    else:
+        cv2.imshow('image', image[0: 500, current_index: coord+1])
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+        sep_images.append(image[0: 500, current_index: coord+1])
+        current_index = coord
+        
 ## Solve over-segmentation(Prevelant in open loop chars like W, U, M etc.)
 #threshold = 9
 #segments = []
 #
 #for x in range(1, len(psc)):
-#    if (psc[x] - psc[x-1]) == 1:
+#    if (psc[x] - psc[x-1]) < threshold:
 #        segments.append(psc[x])
         
-# Get the x-coordinates to crop the image-
-coords = [0, psc[0] + 8]
-single_segment = False
-for x in range(1, len(psc)):
-    if psc[x] - psc[x-1] == 1:
-        pass
-    else:
-        coords.append(psc[x] + 8)
-        
-    
-
 # Draw a line over all psc
-copy = image.copy()
-for col in coords:
-    cv2.line(copy, (col, 0), (col, copy.shape[1]), (255, 255, 255), 3)
-    
-cv2.imshow('image', copy)
-cv2.waitKey()
-cv2.destroyAllWindows()
-
-# FInd connected components of segmented characters
-from autocorrect import spell
-
-spell('sum')
-
-from character_segment import SegmentCharacters
-
-char_segment = SegmentCharacters(image)
-seg_img = char_segment.segment()
-
 from keras.models import load_model
 
 labels = [0,1,2,3,4,5,6,7,8,9,

@@ -5,6 +5,7 @@ Created on Sat Jan 12 17:27:49 2019
 
 @author: myidispg
 """
+import numpy as np
 
 class SegmentCharacters:
     
@@ -13,28 +14,32 @@ class SegmentCharacters:
         # Empty list of columns
         self.psc = []
         
-    def segment(self):
-        for x in range(self.image.shape[0]):
-            total = 0
-            for y in range(self.image.shape[1]):
-                total += self.image[x][y]
-            if total == 1:
-                self.psc.append(x)
-            return self.join_segment(5)
+    def find_char_images(self):
+        segments = self.segment()
+        coords = [0, segments[0] + 6]
+        for x in range(1, len(segments)):
+            if segments[x] - segments[x-1] == 1:
+                pass
+            else:
+                coords.append(segments[x] + 6)
                 
-    # Join the segments that are within a threshhold        
-    def join_segment(self, threshold):
-        final_segments = []
-        for x in self.psc:
-            segments_to_join = []
-            for y in range(x, len(self.psc)):
-                if y < (x + threshold):
-                    if self.psc[y] <= threshold:
-                        segments_to_join.append(self.psc[y])
-            final_segments.append(self.merge_group(segments_to_join))
-            
-        return final_segments
-    
-    def merge_group(self, segments):
-        segments = segments.sort()
-        return segments[int(len(segments))]
+        return coords
+        
+        
+    def segment(self):
+        width, height = self.image.shape
+        print('width- {}, height- {}'.format(width, height))
+        # Find the sum of pixels in all columns
+        col_sum = np.sum(self.image, axis=0)
+        # Find the first column with a pixel
+        first_pix_col = None
+        for x in range(len(col_sum)):
+            if col_sum[x] != 0:
+                first_pix_col = x
+                break
+        # Find columns with sum either 0 or 1
+        psc = []
+        for x in range(first_pix_col, len(col_sum)):
+            if col_sum[x] == 0:# or col_sum[x] == 1:
+                psc.append(x)
+        return psc
