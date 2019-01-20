@@ -50,17 +50,17 @@ for data in test_dataset:
     label = int(data.split('_')[1].split('.')[0])
     label_dict[label].append(data)
 
-category = 34
+category = 28
 kernel = np.ones((2,2),np.uint8)
 
 from skimage.morphology import skeletonize
 
 # Visualize 5 images of each category
-for i in range(15):
+for i in range(5):
     img = cv2.imread(os.path.join(data_dir_base, test_dir, label_dict[category][i]), 0)
-    img = 1.0 * (img > 0.0)
-    img = skeletonize(img).astype(np.float64)
-    img = cv2.dilate(img,kernel,iterations = 1)
+#    img = 1.0 * (img > 0.0)
+#    img = skeletonize(img).astype(np.float64)
+#    img = cv2.dilate(img,kernel,iterations = 1)
     img = imutils.rotate(img, 270)
     img = cv2.flip(img, 1)
     cv2.imshow('image', img)
@@ -84,9 +84,9 @@ def batch_generator(image_paths, batch_size, isTraining):
 #            print(i)
 #            print(os.path.join(data_dir_base, type_dir, image_paths[i]))
             img = cv2.imread(os.path.join(data_dir_base, type_dir, image_paths[i]), 0)
-            img = 1.0 * (img > 0.0)
-            img = skeletonize(img).astype(np.float64)
-            img = cv2.dilate(img,kernel,iterations = 1)
+#            img = 1.0 * (img > 0.0)
+#            img = skeletonize(img).astype(np.float64)
+#            img = cv2.dilate(img,kernel,iterations = 1)
             img = imutils.rotate(img, 270)
             img = cv2.flip(img, 1)
 #            img  = np.divide(img, 255)

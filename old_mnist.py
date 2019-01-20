@@ -121,49 +121,6 @@ from convert_mnist_format import ConvertMNISTFormat
 import numpy as np
 import cv2
 
-image = Image.open('image_5.png')
-#image = image.resize((28, 28), Image.ANTIALIAS)
-image = np.asarray(image)
-#preprocess = ConvertMNISTFormat(image)
-#image = preprocess.process_image()
-image = np.divide(image, 255)
-# Invert the colors so that white lines on black background. Required only when not converted to MNIST format.
-image = (1-image)
-
-
-cv2.imshow('image', image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# Skeletonize(Thining) the image(Not required for individual characters.)
-#from skimage.morphology import skeletonize
-#image = skeletonize(image).astype(np.float64)
-
-# Segment the image
-from character_segment import SegmentCharacters
-
-char_segment = SegmentCharacters(image)
-coords = char_segment.find_char_images()
-
-sep_images = []
-current_index = 0
-kernel = np.ones((2,2),np.uint8)
-for coord in coords:
-    if coord == 0:
-        pass
-    else:
-        copy = image[0: 500, current_index: coord+1]
-        print(copy.shape)
-        mnist_convert = ConvertMNISTFormat(copy)
-        copy = mnist_convert.process_image()
-        copy = cv2.dilate(copy,kernel,iterations = 1)
-        copy = 1.0 * (copy > 0.0)
-        cv2.imshow('image', copy)
-        cv2.waitKey()
-        cv2.destroyAllWindows()
-        sep_images.append(copy)
-        current_index = coord
-        
 ## Solve over-segmentation(Prevelant in open loop chars like W, U, M etc.)
 #threshold = 9
 #segments = []
@@ -181,9 +138,55 @@ labels = [0,1,2,3,4,5,6,7,8,9,
           'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
           'w','x','y','z']
 
-model = load_model('cnn-by-class-1.h5')
-new_image = np.resize(sep_images[0], (1, 28, 28, 1))
-predict = np.argmax(model.predict(new_image))
-print('The image has - {}'.format(labels[predict]))
+model = load_model('cnn-by-class-2.h5')
 
-import autocorrect
+from character_segment import SegmentCharacters
+
+def brighten_image(image):
+    for x in range(image.shape[0]):
+        for y in range(image.shape[1]):
+            if image[x][y] > 0:
+                image[x][y] = (image[x][y] + 0.2) if (image[x][y] + 0.2) < 1 else image[x][y]
+    return image
+    
+
+test_images = ['image_1.png', 'image_2.png', 'image_3.png', 'image_6.png', 'image_7.png', 
+               'image_8.png', 'image_9.png', 'image_10.png', 'image_11.png', 'image_12.png', 
+               'image_13.png', 'image_15.png']
+
+
+for image in test_images:
+    image = Image.open(image)
+    image = np.asarray(image)
+    image = np.divide(image, 255)
+    image = (1-image)
+#    cv2.imshow('image', image)
+#    cv2.waitKey(0)
+#    cv2.destroyAllWindows()
+#    
+    char_segment = SegmentCharacters(image)
+    coords = char_segment.find_char_images()
+    
+    sep_images = []
+    current_index = 0
+    kernel = np.ones((2,2),np.uint8)
+    for coord in coords:
+        if coord == 0:
+            pass
+        else:
+            copy = image[0: 500, current_index: coord+1]
+            print(copy.shape)
+            mnist_convert = ConvertMNISTFormat(copy)
+            copy = mnist_convert.process_image()
+            copy = cv2.dilate(copy,kernel,iterations = 1)
+            copy = brighten_image(copy)
+            cv2.imshow('image', copy)
+            cv2.waitKey()
+            cv2.destroyAllWindows()
+            sep_images.append(copy)
+            current_index = coord
+    new_image = np.resize(sep_images[0], (1, 28, 28, 1))
+    predict = np.argmax(model.predict(new_image))
+    print('The image has - {}'.format(labels[predict]))
+
+
