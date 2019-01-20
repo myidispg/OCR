@@ -28,7 +28,7 @@ class SegmentCharacters:
         
     def segment(self):
         width, height = self.image.shape
-        print('width- {}, height- {}'.format(width, height))
+#        print('width- {}, height- {}'.format(width, height))
         # Find the sum of pixels in all columns
         col_sum = np.sum(self.image, axis=0)
         # Find the first column with a pixel

@@ -131,6 +131,10 @@ image = np.divide(image, 255)
 image = (1-image)
 
 
+cv2.imshow('image', image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
 # Skeletonize(Thining) the image(Not required for individual characters.)
 #from skimage.morphology import skeletonize
 #image = skeletonize(image).astype(np.float64)
@@ -143,14 +147,21 @@ coords = char_segment.find_char_images()
 
 sep_images = []
 current_index = 0
+kernel = np.ones((2,2),np.uint8)
 for coord in coords:
     if coord == 0:
         pass
     else:
-        cv2.imshow('image', image[0: 500, current_index: coord+1])
+        copy = image[0: 500, current_index: coord+1]
+        print(copy.shape)
+        mnist_convert = ConvertMNISTFormat(copy)
+        copy = mnist_convert.process_image()
+        copy = cv2.dilate(copy,kernel,iterations = 1)
+        copy = 1.0 * (copy > 0.0)
+        cv2.imshow('image', copy)
         cv2.waitKey()
         cv2.destroyAllWindows()
-        sep_images.append(image[0: 500, current_index: coord+1])
+        sep_images.append(copy)
         current_index = coord
         
 ## Solve over-segmentation(Prevelant in open loop chars like W, U, M etc.)
@@ -170,9 +181,9 @@ labels = [0,1,2,3,4,5,6,7,8,9,
           'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
           'w','x','y','z']
 
-model = load_model('cnn-by-class.h5')
-image = np.resize(image, (1, 28, 28, 1))
-predict = np.argmax(model.predict(image))
+model = load_model('cnn-by-class-1.h5')
+new_image = np.resize(sep_images[0], (1, 28, 28, 1))
+predict = np.argmax(model.predict(new_image))
 print('The image has - {}'.format(labels[predict]))
 
-# Test the 
+import autocorrect

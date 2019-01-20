@@ -17,12 +17,12 @@ class ConvertMNISTFormat():
         self.image = image
     
     def process_image(self):
-        self.image = np.subtract(255, self.image)
+#        self.image = np.subtract(255, self.image)
         # better black and white version
         # 128 is the threshhold value. Above it the value will be 255 and below will be 0. Controlles by THRESH_BINARY
         # cv2.THRESH_OTSU = 
-        (thresh, self.image) = cv2.threshold(self.image, 5, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-        
+#        (thresh, self.image) = cv2.threshold(self.image, 5, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        print(self.image.shape)
         # Remove empty rows and columns.
         while np.sum(self.image[0]) == 0:
             self.image = self.image[1:]
@@ -44,13 +44,13 @@ class ConvertMNISTFormat():
             rows = 20
             cols = int(round(cols*factor))
             # first cols than rows
-            self.image = cv2.resize(self.image, (cols,rows))
+            self.image = cv2.resize(self.image, (cols,rows), interpolation = cv2.INTER_AREA)
         else:
             factor = 20.0/cols
             cols = 20
             rows = int(round(rows*factor))
             # first cols than rows
-            self.image = cv2.resize(self.image, (cols, rows))
+            self.image = cv2.resize(self.image, (cols, rows), interpolation = cv2.INTER_AREA)
             
         # Add a padding on all sides to turn into 28 * 28
         colsPadding = (int(math.ceil((28-cols)/2.0)),int(math.floor((28-cols)/2.0)))
