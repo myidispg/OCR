@@ -22,7 +22,7 @@ class ConvertMNISTFormat():
         # 128 is the threshhold value. Above it the value will be 255 and below will be 0. Controlles by THRESH_BINARY
         # cv2.THRESH_OTSU = 
 #        (thresh, self.image) = cv2.threshold(self.image, 5, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-        print(self.image.shape)
+#        print(self.image.shape)
         # Remove empty rows and columns.
         while np.sum(self.image[0]) == 0:
             self.image = self.image[1:]

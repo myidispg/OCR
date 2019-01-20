@@ -23,6 +23,9 @@ class PaintWindow():
         self.last_x, self.last_y = None, None
         self.image_number = 5
         self.model = model
+        self.isUserEntering = False # A flag to check if input is entered.
+        self.currentWord = ""
+        self.after_id = None # An id to store the id of after call
         self.labels = [0,1,2,3,4,5,6,7,8,9,
           'A','B','C','D','E','F','G','H','I', 'J', 'K','L','M','N','O','P',
           'Q','R','S','T','U','V','W','X','Y','Z', 'a','b','c','d','e','f',
@@ -74,21 +77,22 @@ class PaintWindow():
         self.btn_exclamation = Button(self.frame_btns, text='!', command=self.insert_exclamation)
         self.btn_exclamation.grid(row=0, column=5)
         
+        self.btn_backspace = Button(self.frame_btns, text='Backspace', command=self.backspace)
+        self.btn_backspace.grid(row=0, column=6)
+        
         self.btn_clear = Button(self.frame_btns, text='Clear canvas', command=self.clear_canvas)
-        self.btn_clear.grid(row=0, column=6)
-
-    def save(self):
-        filename = 'image_{}.png'.format(self.image_number)
-#        self.image = self.image.resize((28, 28), Image.ANTIALIAS)
-        self.image.save(filename)
-        self.image_number += 1
-
+        self.btn_clear.grid(row=0, column=7)
+        
     def activate_paint(self, event):
         self.cv.bind('<B1-Motion>', self.paint)
         self.cv.bind('<ButtonRelease-1>', self.motion_end)
         self.last_x, self.last_y = event.x, event.y
 
     def paint(self, event):
+        self.isUserEntering = True
+        if self.after_id is not None:
+            self.cv.after_cancel(self.after_id)
+            self.after_id = None
         x, y = event.x, event.y
         self.cv.create_line((self.last_x, self.last_y, x, y), width=3)
         # --PIL--
@@ -97,22 +101,24 @@ class PaintWindow():
 
     # Function to execute when the motion event has ended.
     def motion_end(self, event):
-        self.predict_char()
-        self.text.insert(INSERT, '-something')
-#        self.clear_canvas(event, event.x, event.y)
+        self.isUserEntering = False
+        self.after_id = self.cv.after(1500, self.clear_canvas)
+        print(self.after_id)
 
     def clear_canvas(self):
-        self.cv.delete('all')
-#        self.save()
-#        print(self.image.size)
-        for x in range(self.image.size[0]):
-            for y in range(self.image.size[1]):
-                self.image.putpixel((x, y), (255))
-#        self.save()
+        if self.isUserEntering == False:
+            print('In clear_canvas')
+            self.predict_char()
+            self.text.insert(INSERT, self.currentWord)
+            self.currentWord = ''
+            self.cv.delete('all')
+            for x in range(self.image.size[0]):
+                for y in range(self.image.size[1]):
+                    self.image.putpixel((x, y), (255))
         
     def predict_char(self):
         image = np.asarray(self.image)
-        print(image.shape)
+#        print('image_shape- {}'.format(image.shape))
         image = np.divide(image, 255)
         image = (1-image)
         char_segment = SegmentCharacters(image)
@@ -125,7 +131,6 @@ class PaintWindow():
                 pass
             else:
                 copy = image[0: 500, current_index: coord+1]
-                print(copy.shape)
                 mnist_convert = ConvertMNISTFormat(copy)
                 copy = mnist_convert.process_image()
                 copy = cv2.dilate(copy,kernel,iterations = 1)
@@ -135,9 +140,11 @@ class PaintWindow():
 #                cv2.destroyAllWindows()
                 sep_images.append(copy)
                 current_index = coord
-        new_image = np.resize(sep_images[0], (1, 28, 28, 1))
-        predict = np.argmax(model.predict(new_image))
-        print('The image has - {}'.format(self.labels[predict]))
+        for image in sep_images:
+            new_image = np.resize(image, (1, 28, 28, 1))
+            predict = np.argmax(model.predict(new_image))
+            self.currentWord += str(self.labels[predict])
+        print(self.currentWord)
         
     def insert_space(self):
         self.text.insert(INSERT, ' ')
@@ -156,6 +163,9 @@ class PaintWindow():
 
     def insert_new_line(self):
         self.text.insert(INSERT, '\n')
+        
+    def backspace(self):
+        self.text.delete('end-2c', END)
         
     def brighten_image(self, image):
         for x in range(image.shape[0]):
