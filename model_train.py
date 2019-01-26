@@ -71,7 +71,11 @@ for i in range(5):
 # Define a batch generator
 
 kernel = np.ones((2,2),np.uint8)
+<<<<<<< HEAD
 #test_list = []
+=======
+test_list = []
+>>>>>>> 44837e26c38799af222cefa59319bc4b6bfd16ca
 
 def batch_generator(image_paths, batch_size, isTraining):
     while True:
@@ -90,7 +94,11 @@ def batch_generator(image_paths, batch_size, isTraining):
             img = imutils.rotate(img, 270)
             img = cv2.flip(img, 1)
 #            img  = np.divide(img, 255)
+<<<<<<< HEAD
 #            test_list.append(img)
+=======
+            test_list.append(img)
+>>>>>>> 44837e26c38799af222cefa59319bc4b6bfd16ca
             img = img.reshape(28, 28, 1)
             batch_imgs.append(img)
             label = image_paths[i].split('_')[1].split('.')[0]
