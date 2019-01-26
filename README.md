@@ -4,6 +4,9 @@ When I  started with Machine Learning, one of the most basic examples is the MNI
 
 This OCR displays a Tkinter GUI window with a canvas. The user can draw on the canvas and be provided with real time recognition of the drawn characters.
 
+## Demo
+![demo gif](https://github.com/myidispg/OCR/blob/master/demo.gif)
+
 ## The usage details and details of various files will be uploaded in a few days once I have fixed the few remaining bugs.
 
 ## Attention:
